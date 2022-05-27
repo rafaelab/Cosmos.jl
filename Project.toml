@@ -1,0 +1,11 @@
+name = "Cosmos"
+uuid = "78433a98-c9b8-45ad-92d3-77baa2d1b51d"
+authors = ["Rafael <rafaelab@users.noreply.github.com>"]
+version = "0.1.0"
+
+[deps]
+Cosmology = "76746363-e552-5dba-9a5a-cef6fa9cc5ab"
+PhysicalConstants = "5ad8b20f-a522-5ce9-bfc9-ddf1d5bda6ab"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+UnitfulAstro = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
