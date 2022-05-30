@@ -3,7 +3,6 @@ module Cosmos
 export 
 	CosmologicalModel,
 	CosmologyPlanck,
-	CosmologyCRPropa,
 	redshiftToComovingDistance,
 	redshiftToLuminosityDistance,
 	redshiftToLightTravelDistance,
@@ -24,7 +23,7 @@ using Reexport
 
 import Longinus.Miscellaneous: Maybe, AbstractVectorOrNTuple
 import Unitful: 𝐋
-
+@reexport import Cosmology: AbstractCosmology
 
 
 include("cosmology.jl")

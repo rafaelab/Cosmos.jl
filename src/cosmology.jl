@@ -23,9 +23,9 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology}
 		dC, dL, dP = [], [], []
 
 		@simd for i in eachindex(z)
-			dC0 = comoving_radial_dist(cosmo, 0., z[i]) |> u"Mpc"
-			dL0 = luminosity_dist(cosmo, z[i]) |> u"Mpc"
-			dP0 = (lookback_time(cosmo, z[i]) |> u"s") * SpeedOfLightInVacuum |> u"Mpc"
+			dC0 = comoving_radial_dist(cosmo, 0., z[i]) |> u"m"
+			dL0 = luminosity_dist(cosmo, z[i]) |> u"m"
+			dP0 = (lookback_time(cosmo, z[i]) |> u"s") * SpeedOfLightInVacuum |> u"m"
 			@inbounds push!(dC, dC0)
 			@inbounds push!(dL, dL0)
 			@inbounds push!(dP, dP0)
@@ -48,7 +48,7 @@ end
 
 # convenience constructors
 const CosmologyPlanck(; z::Maybe{AbstractVectorOrNTuple} = nothing) = CosmologicalModel{Cosmology.FlatLCDM{Float64}}(cosmology(); z = z)
-const CosmologyCRPropa(; z::Maybe{AbstractVectorOrNTuple} = nothing) = CosmologicalModel{Cosmology.FlatLCDM{Float64}}(Cosmology.FlatLCDM{Float64}(0.673, 0.685, 0.315, 0.); z = z)
+
 
 
 # ---------------------------------------------------------------------------------- #
@@ -71,13 +71,13 @@ redshiftToLightTravelDistance(cosmo::CosmologicalModel, z0::Float64) = ((redshif
 redshiftsToLightTravelDistance(cosmo::CosmologicalModel, z0::Float64, z1::Float64) = redshiftToLightTravelDistance(cosmo, z0) - redshiftToLightTravelDistance(cosmo, z1)
 
 comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Float64) = cosmo._comovingDistance2Redshift(d0)
-comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? comovingDistanceToRedshift(cosmo, ustrip(d0)) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
+comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? comovingDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
 
 lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Float64) = cosmo._lightTravelDistance2Redshift(d0)
-lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? lightTravelDistanceToRedshift(cosmo, ustrip(d0)) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
+lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? lightTravelDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
 
 luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Float64) = cosmo._luminosityDistance2Redshift(d0)
-luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? luminosityDistanceToRedshift(cosmo, ustrip(d0)) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
+luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? luminosityDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
 
 
 # ---------------------------------------------------------------------------------- #
