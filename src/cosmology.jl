@@ -10,7 +10,7 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology}
 	_comovingDistance2Redshift
 	_luminosityDistance2Redshift
 	_lightTravelDistance2Redshift
-	function CosmologicalModel{C}(cosmo::C; z::Maybe{AbstractVectorOrNTuple} = nothing) where {C}
+	function CosmologicalModel{C}(cosmo::C; z = nothing) where {C}
 		if isnothing(z)
 			z1 = ScaleLogarithmicNegativeRange(-1.0 + 1e-10, -0.01, 91)
 			z2 = ScaleLinearRange(-0.01, 0.01, 21)
@@ -47,7 +47,7 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology}
 end
 
 # convenience constructors
-const CosmologyPlanck(; z::Maybe{AbstractVectorOrNTuple} = nothing) = CosmologicalModel{Cosmology.FlatLCDM{Float64}}(cosmology(); z = z)
+const CosmologyPlanck(; z = nothing) = CosmologicalModel{Cosmology.FlatLCDM{Float64}}(cosmology(); z = z)
 
 
 
