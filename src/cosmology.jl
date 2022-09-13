@@ -10,25 +10,34 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology}
 	_comovingDistance2Redshift
 	_luminosityDistance2Redshift
 	_lightTravelDistance2Redshift
-	function CosmologicalModel{C}(cosmo::C; z = nothing) where {C}
+	function CosmologicalModel{C}(cosmo::C; z::Union{Nothing, Vector{Z}} = nothing) where {C <: Cosmology.AbstractCosmology, Z <: Real}
+		# infer general type
+		T = typeof(cosmo.h)
+
+		# prepare redshifts
 		if isnothing(z)
-			z1 = ScaleLogarithmicNegativeRange(-1.0 + 1e-10, -0.01, 91)
-			z2 = ScaleLinearRange(-0.01, 0.01, 21)
-			z3 = ScaleLogarithmicRange(0.01, 1e3, 51)
-			z = vcat(z1, z2, z3)
+			z = T[]
+			append!(z, -10. .^ collect(range(-3., 0.; length = 91)))
+			append!(z, collect(range(-0.001, 0.001; length = 31)))
+			append!(z, 10 .^ collect(range(-3., 3.; length = 61)))
 			unique!(z)
+		else
+			z = convert(Vector{T}, z)
 		end
+		z = z[z .> -1.0]
+		sort!(z)
+
 	
 		# distance arrays
-		dC, dL, dP = [], [], []
+		dC, dL, dP = T[], T[], T[]
 
 		@simd for i in eachindex(z)
 			dC0 = comoving_radial_dist(cosmo, 0., z[i]) |> u"m"
 			dL0 = luminosity_dist(cosmo, z[i]) |> u"m"
 			dP0 = (lookback_time(cosmo, z[i]) |> u"s") * SpeedOfLightInVacuum |> u"m"
-			@inbounds push!(dC, dC0)
-			@inbounds push!(dL, dL0)
-			@inbounds push!(dP, dP0)
+			@inbounds push!(dC, ustrip(dC0 |> u"m"))
+			@inbounds push!(dL, ustrip(dL0 |> u"m"))
+			@inbounds push!(dP, ustrip(dP0 |> u"m"))
 		end
 	
 		# get indices that sort arrays, as required by Interpolations.jl
@@ -36,49 +45,124 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology}
 		idxL = sortperm(dL)
 		idxP = sortperm(dP)
 	
-		# functions 
-		c2z = LinearInterpolation(ustrip.(dC[idxC]), z[idxC])
-		l2z = LinearInterpolation(ustrip.(dL[idxL]), z[idxL])
-		p2z = LinearInterpolation(ustrip.(dP[idxP]), z[idxP])
+		# functions: for `Interpolations` version < 0.14
+		# c2z = LinearInterpolation(ustrip.(dC[idxC]), z[idxC])
+		# l2z = LinearInterpolation(ustrip.(dL[idxL]), z[idxL])
+		# p2z = LinearInterpolation(ustrip.(dP[idxP]), z[idxP])
+
+		println("dC, ", dC[idxC])
+
+		c2z = linear_interpolation(dC[idxC], z[idxC])
+		l2z = linear_interpolation(dL[idxL], z[idxL])
+		p2z = linear_interpolation(dP[idxP], z[idxP])
 
 
 		return new{C}(cosmo, c2z, l2z, p2z)
 	end
 end
 
-# convenience constructors
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+Define Planck's cosmology.
+"""
 const CosmologyPlanck(; z = nothing) = CosmologicalModel{Cosmology.FlatLCDM{Float64}}(cosmology(); z = z)
 
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+	redshiftToComovingDistance(cosmology, z)
+	redshiftToComovingDistance(cosmology, z1, z2)
+
+Computes the comoving distance between two redshifts.
+If a second redshift value is not provided, it is assumed to be 0.
+"""
+redshiftToComovingDistance(cosmo::CosmologicalModel, z0::Real, z1::Real) = comoving_radial_dist(cosmo.cosmology, z0, z1) 
+redshiftToComovingDistance(cosmo::CosmologicalModel, z::Real) = comoving_radial_dist(cosmo.cosmology, zero(eltype(cosmo)), z)
+
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+	redshiftToLuminosityDistance(cosmology, z)
+	redshiftToLuminosityDistance(cosmology, z1, z2)
+
+Computes the luminosity distance between two redshifts.
+If a second redshift value is not provided, it is assumed to be 0.
+"""
+redshiftToLuminosityDistance(cosmo::CosmologicalModel, z0::Real) = luminosity_dist(cosmo.cosmology, z0)
+redshiftToLuminosityDistance(cosmo::CosmologicalModel, z0::Real, z1::Real) = redshiftToLuminosityDistance(cosmo, z0) - redshiftToLuminosityDistance(cosmo, z1)
 
 
 # ---------------------------------------------------------------------------------- #
 # 
-# @doc """
-# 	comovingDistanceToRedshift(cosmo, d)
-# 	comovingDistanceToRedshift(cosmo, d1, d2)
+@doc """
+	redshiftToLookbackTime(cosmology, z)
 
-# Convert comoving distance to redshift
-# """
-redshiftsToComovingDistance(cosmo::CosmologicalModel, z0::Float64, z1::Float64) = comoving_radial_dist(cosmo.cosmology, z0, z1) 
-redshiftToComovingDistance(cosmo::CosmologicalModel, z0::Float64) = redshiftsToComovingDistance(cosmo, 0., z0)
+Computes the lookback_time corresponding to a given redshift.
+"""
+redshiftToLookbackTime(cosmo::CosmologicalModel, z0::Real) = lookback_time(cosmo.cosmology, z0)
 
-redshiftToLuminosityDistance(cosmo::CosmologicalModel, z0::Float64) = luminosity_dist(cosmo.cosmology, z0)
-redshifts2ToLuminosityDistance(cosmo::CosmologicalModel, z0::Float64, z1::Float64) = redshiftToLuminosityDistance(cosmo, z0) - redshiftToLuminosityDistance(cosmo, z1)
 
-redshiftToLookbackTime(cosmo::CosmologicalModel, z0::Float64) = lookback_time(cosmo.cosmology, z0)
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+	redshiftToLightTravelDistance(cosmology, z)
 
-redshiftToLightTravelDistance(cosmo::CosmologicalModel, z0::Float64) = ((redshiftToLookbackTime(cosmo, z0) |> u"s") * SpeedOfLightInVacuum) |> u"Mpc"
-redshiftsToLightTravelDistance(cosmo::CosmologicalModel, z0::Float64, z1::Float64) = redshiftToLightTravelDistance(cosmo, z0) - redshiftToLightTravelDistance(cosmo, z1)
+Computes the light-travel distance between two redshifts.
+"""
+redshiftToLightTravelDistance(cosmo::CosmologicalModel, z0::Real) = (redshiftToLookbackTime(cosmo, z0) * SpeedOfLightInVacuum) |> u"Mpc"
 
-comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Float64) = cosmo._comovingDistance2Redshift(d0)
-comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? comovingDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
 
-lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Float64) = cosmo._lightTravelDistance2Redshift(d0)
-lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? lightTravelDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+	comovingDistanceToRedshift(cosmology, z)
+	comovingDistanceToRedshift(cosmology, z1, z2)
 
-luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Float64) = cosmo._luminosityDistance2Redshift(d0)
-luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = (dimension(d0) == 𝐋) ? luminosityDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) : throw(DimensionMismatch("Dimension of provided quantity is not distance."))
+Computes the redshift corresponding to a given comoving distance.
+"""
+comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._comovingDistance2Redshift(d0)
+comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && comovingDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
 
+
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+	lightTravelDistanceToRedshift(cosmology, z)
+
+Computes the redshift corresponding to a given light-travel distance.
+"""
+lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._lightTravelDistance2Redshift(d0)
+lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && lightTravelDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) 
+
+
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+	luminosityDistanceToRedshift(cosmology, z)
+
+Computes the redshift corresponding to a given luminosity distance.
+"""
+luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._luminosityDistance2Redshift(d0)
+luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) &&  luminosityDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) 
+
+
+# ---------------------------------------------------------------------------------- #
+# 
+# Overload Base functions
+Base.eltype(cosmo::CosmologicalModel) = typeof(cosmo.cosmology.h)
+
+# ---------------------------------------------------------------------------------- #
+# 
+# check if dimension provided is correct
+@inline function isLengthDimension(d::Unitful.AbstractQuantity) 
+	if dimension(d0) ≠ 𝐋
+		throw(DimensionMismatch("Dimension of provided quantity is not distance."))
+	end
+
+	return true
+end
+_
 
 # ---------------------------------------------------------------------------------- #
 # 
