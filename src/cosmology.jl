@@ -10,6 +10,8 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology}
 	_comovingDistance2Redshift
 	_luminosityDistance2Redshift
 	_lightTravelDistance2Redshift
+	_comovingTransverse2Redshift
+	_angularDiameterDistance2Redshift
 	function CosmologicalModel{C}(cosmo::C; z::Union{Nothing, Vector{Z}} = nothing) where {C <: Cosmology.AbstractCosmology, Z <: Real}
 		# infer general type
 		T = typeof(cosmo.h)
@@ -29,44 +31,50 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology}
 
 	
 		# distance arrays
-		dC, dL, dP = T[], T[], T[]
+		dC, dL, dP, dT, dA = T[], T[], T[], T[], T[]
 
 		@simd for i in eachindex(z)
 			dC0 = comoving_radial_dist(cosmo, 0., z[i]) |> u"m"
 			dL0 = luminosity_dist(cosmo, z[i]) |> u"m"
 			dP0 = (lookback_time(cosmo, z[i]) |> u"s") * SpeedOfLightInVacuum |> u"m"
+			dT0 = comoving_transverse_dist(cosmo, z[i]) |> u"m"
+			dA0 = angular_diameter_dist(cosmo, z[i]) |> u"m"
 			@inbounds push!(dC, ustrip(dC0 |> u"m"))
 			@inbounds push!(dL, ustrip(dL0 |> u"m"))
 			@inbounds push!(dP, ustrip(dP0 |> u"m"))
+			@inbounds push!(dT, ustrip(dT0 |> u"m"))
+			@inbounds push!(dA, ustrip(dA0 |> u"m"))
 		end
 	
 		# get indices that sort arrays, as required by Interpolations.jl
 		idxC = sortperm(dC)
 		idxL = sortperm(dL)
 		idxP = sortperm(dP)
+		idxT = sortperm(dT)
+		idxA = sortperm(dA)
 	
 		# functions: for `Interpolations` version < 0.14
 		# c2z = LinearInterpolation(ustrip.(dC[idxC]), z[idxC])
 		# l2z = LinearInterpolation(ustrip.(dL[idxL]), z[idxL])
 		# p2z = LinearInterpolation(ustrip.(dP[idxP]), z[idxP])
 
-		println("dC, ", dC[idxC])
-
 		c2z = linear_interpolation(dC[idxC], z[idxC])
 		l2z = linear_interpolation(dL[idxL], z[idxL])
 		p2z = linear_interpolation(dP[idxP], z[idxP])
+		t2z = linear_interpolation(dT[idxT], z[idxP])
+		a2z = linear_interpolation(dA[idxA], z[idxP])
 
-
-		return new{C}(cosmo, c2z, l2z, p2z)
+		return new{C}(cosmo, c2z, l2z, p2z, t2z, a2z)
 	end
 end
 
 # ---------------------------------------------------------------------------------- #
 # 
 @doc """
-Define Planck's cosmology.
+Latest Planck's cosmology.
 """
 const CosmologyPlanck(; z = nothing) = CosmologicalModel{Cosmology.FlatLCDM{Float64}}(cosmology(); z = z)
+
 
 # ---------------------------------------------------------------------------------- #
 # 
@@ -79,6 +87,7 @@ If a second redshift value is not provided, it is assumed to be 0.
 """
 redshiftToComovingDistance(cosmo::CosmologicalModel, z0::Real, z1::Real) = comoving_radial_dist(cosmo.cosmology, z0, z1) 
 redshiftToComovingDistance(cosmo::CosmologicalModel, z::Real) = comoving_radial_dist(cosmo.cosmology, zero(eltype(cosmo)), z)
+
 
 # ---------------------------------------------------------------------------------- #
 # 
@@ -149,8 +158,38 @@ luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuant
 
 # ---------------------------------------------------------------------------------- #
 # 
-# Overload Base functions
+@doc """
+	comovingTransverseDistanceToRedshift(cosmology, z)
+	comovingTransverseDistanceToRedshift(cosmology, z1, z2)
+
+Computes the redshift corresponding to a given transverse comoving distance.
+"""
+comovingTransverseDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._comovingTransverseDistance2Redshift(d0)
+comovingTransverseDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && comovingTransverseDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
+
+
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+	angularDiameterDistanceToRedshift(cosmology, z)
+	angularDiameterDistanceToRedshift(cosmology, z1, z2)
+
+Computes the redshift corresponding to a given angular diameter distance.
+"""
+angularDiameterDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._angularDiameterDistance2Redshift(d0)
+angularDiameterDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && angularDiameterDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
+
+
+# ---------------------------------------------------------------------------------- #
+# 
+@doc """
+	eltype(cosmology)
+
+Overload Base functions. 
+The returned type is essentially the data type of the underlying cosmology from `Cosmology.jl` (Float64, by default).
+"""
 Base.eltype(cosmo::CosmologicalModel) = typeof(cosmo.cosmology.h)
+
 
 # ---------------------------------------------------------------------------------- #
 # 
@@ -162,7 +201,6 @@ Base.eltype(cosmo::CosmologicalModel) = typeof(cosmo.cosmology.h)
 
 	return true
 end
-_
 
 # ---------------------------------------------------------------------------------- #
 # 
