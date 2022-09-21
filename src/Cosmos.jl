@@ -34,7 +34,7 @@ using Reexport
 @reexport using UnitfulAstro
 
 import Unitful: 𝐋
-@reexport import Cosmology: OpenLCDM, OpenWCDM, ClosedLCDM, ClosedWCDM, FlatLCDM, FlatWCDM
+import Cosmology: OpenLCDM, OpenWCDM, ClosedLCDM, ClosedWCDM, FlatLCDM, FlatWCDM
 
 include("cosmology.jl")
 
