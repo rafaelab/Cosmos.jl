@@ -77,7 +77,7 @@ redshiftToTransverseComovingDistance(cosmo::CosmologicalModel, z::Real) = redshi
 Computes the redshift corresponding to a given comoving distance.
 """
 comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._comovingDistance2Redshift(d0)
-comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && comovingDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
+comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = isLengthDimension(d0) && comovingDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -88,7 +88,7 @@ comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantit
 Computes the redshift corresponding to a given light-travel distance.
 """
 lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._lightTravelDistance2Redshift(d0)
-lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && lightTravelDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) 
+lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = isLengthDimension(d0) && lightTravelDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) 
 
 
 # ----------------------------------------------------------------------------------------------- #
