@@ -40,15 +40,14 @@ using Reexport
 @reexport using Unitful
 @reexport using UnitfulAstro
 
-import Unitful: 𝐋
 import Cosmology: OpenLCDM, OpenWCDM, ClosedLCDM, ClosedWCDM, FlatLCDM, FlatWCDM
 import Cosmology: H, E
 
+
+include("common.jl")
 include("cosmologicalModel.jl")
 include("cosmology.jl")
 include("measures.jl")
-
-
 
 
 end # module
