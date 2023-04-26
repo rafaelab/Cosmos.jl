@@ -28,16 +28,22 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: Real}
 	_lightTravelDistance2Redshift
 	_comovingTransverse2Redshift
 	_angularDiameterDistance2Redshift
-	function CosmologicalModel{C, T}(h::Real, Ωm::Real, Ωr::Real, Ωk::Real, wEOSΛ::Tuple; z::Union{Nothing, Vector{Z}} = nothing) where {C <: Cosmology.AbstractCosmology, T <: Real, Z <: Real}
-		cosmo = cosmology(; h = h, OmegaK = Ωk, OmegaM = Ωm, OmegaR = Ωr, w0 = wEOSΛ[1], wa = wEOSΛ[2])
+	function CosmologicalModel{C, T}(cosmo::C; z::Union{Nothing, Vector{Z}} = nothing) where {C <: Cosmology.AbstractCosmology, T <: Real, Z <: Real}		
+		h = cosmo.h
+		Ωk = (C isa Union{Cosmology.AbstractClosedCosmology, Cosmology.AbstractOpenCosmology}) ? cosmo.Ω_k : zero(T)
+		Ωr = cosmo.Ω_r
+		Ωm = cosmo.Ω_m
 		ΩΛ = cosmo.Ω_Λ
-
+		wEOSΛ = (C isa Union{FlatWCDM, OpenWCDM, ClosedWCDM}) ? (cosmo.w0, cosmo.wa) : (- one(T), zero(T))
+		
 		# prepare redshifts
 		if isnothing(z)
 			z = T[]
 			append!(z, -10. .^ collect(range(-3., 0.; length = 91)))
 			append!(z, collect(range(-0.001, 0.001; length = 31)))
-			append!(z, 10 .^ collect(range(-3., 3.; length = 61)))
+			append!(z, collect(range(0.001, 10.; length = 81)))
+			append!(z, collect(range(1., 2.; length = 21)))
+			append!(z, 10 .^ collect(range(2., 4.; length = 41)))
 			unique!(z)
 		else
 			z = convert(Vector{T}, z)
@@ -45,21 +51,20 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: Real}
 		z = z[z .> -1.0]
 		sort!(z)
 
-	
 		# distance arrays
 		dC, dL, dP, dT, dA = T[], T[], T[], T[], T[]
 
 		@simd for i in eachindex(z)
-			dC0 = comoving_radial_dist(cosmo, 0., z[i]) |> u"m"
+			dC0 = comoving_radial_dist(cosmo, z[i]) |> u"m"
 			dL0 = luminosity_dist(cosmo, z[i]) |> u"m"
 			dP0 = (lookback_time(cosmo, z[i]) |> u"s") * SpeedOfLightInVacuum |> u"m"
 			dT0 = comoving_transverse_dist(cosmo, z[i]) |> u"m"
 			dA0 = angular_diameter_dist(cosmo, z[i]) |> u"m"
-			@inbounds push!(dC, ustrip(dC0 |> u"m"))
-			@inbounds push!(dL, ustrip(dL0 |> u"m"))
-			@inbounds push!(dP, ustrip(dP0 |> u"m"))
-			@inbounds push!(dT, ustrip(dT0 |> u"m"))
-			@inbounds push!(dA, ustrip(dA0 |> u"m"))
+			@inbounds push!(dC, ustrip.(dC0 |> u"m"))
+			@inbounds push!(dL, ustrip.(dL0 |> u"m"))
+			@inbounds push!(dP, ustrip.(dP0 |> u"m"))
+			@inbounds push!(dT, ustrip.(dT0 |> u"m"))
+			@inbounds push!(dA, ustrip.(dA0 |> u"m"))
 		end
 	
 		# get indices that sort arrays, as required by Interpolations.jl
@@ -74,40 +79,33 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: Real}
 		# l2z = LinearInterpolation(ustrip.(dL[idxL]), z[idxL])
 		# p2z = LinearInterpolation(ustrip.(dP[idxP]), z[idxP])
 
-		c2z = linear_interpolation(dC[idxC], z[idxC])
-		l2z = linear_interpolation(dL[idxL], z[idxL])
-		p2z = linear_interpolation(dP[idxP], z[idxP])
-		t2z = linear_interpolation(dT[idxT], z[idxP])
-		a2z = linear_interpolation(dA[idxA], z[idxP])
+		# extrap_full = extrapolate(scale(interpolate(A, BSpline(Linear())), xs), Line())
+
+		c2z = interpolate(dC[idxC], z[idxC], SteffenMonotonicInterpolation())
+		l2z = interpolate(dL[idxL], z[idxL], SteffenMonotonicInterpolation())
+		p2z = interpolate(dP[idxP], z[idxP], SteffenMonotonicInterpolation())
+		t2z = interpolate(dT[idxT], z[idxT], SteffenMonotonicInterpolation())
+		a2z = interpolate(dA[idxA], z[idxA], SteffenMonotonicInterpolation())
 
 		return new{typeof(cosmo), typeof(h)}(h, ΩΛ, Ωm, Ωr, Ωk, wEOSΛ, cosmo, c2z, l2z, p2z, t2z, a2z)
 	end
 end
 
-function CosmologicalModel(h::Real, Ωm::Real, Ωr::Real, Ωk::Real, wEOSΛ::Tuple; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real}
-	T = promote_type(typeof(h), typeof(Ωm), typeof(Ωk), typeof(Ωr), typeof(wEOSΛ[1]), typeof(wEOSΛ[2]))
-	h = T(h)
-	Ωk = T(Ωk)
-	Ωr = T(Ωr) 
-	wEOSΛ = (T(first(wEOSΛ)), T(last(wEOSΛ)))
-
-	cosmo = cosmology(; h = h, OmegaK = Ωk, OmegaM = Ωm, OmegaR = Ωr, w0 = wEOSΛ[1], wa = wEOSΛ[2])
-	C = typeof(cosmo)
-
-	return CosmologicalModel{C, T}(h, Ωm, Ωr, Ωk, wEOSΛ; z = z)
+function CosmologicalModel(h::Real, Ωm::Real; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real}
+	cosmo = cosmology(h = h, OmegaM = Ωm)
+	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; z = z)
 end
 
-CosmologicalModel(h::Real, Ωm::Real, Ωr::Real, Ωk::Real; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real} = CosmologicalModel(h, Ωm, Ωr, Ωk, (-1., 0.); z = z) 
+function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real}
+	cosmo = cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk)
+	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; z = z)
+end
 
-CosmologicalModel(h::Real, Ωm::Real, Ωr::Real; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real} = CosmologicalModel(h, Ωm, Ωr, 0., (-1., 0.); z = z) 
+function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real, Ωr::Real; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real}
+	cosmo = cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk, Omegar = Ωr)
+	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; z = z)
+end
 
-CosmologicalModel(cosmo::FlatLCDM{T}; z::Union{Nothing, Vector{Z}} = nothing) where {T <: Real, Z <: Real} = CosmologicalModel(cosmo.h, cosmo.Ω_m, cosmo.Ω_r, 0., (-1., 0.); z = z)
-
-CosmologicalModel(cosmo::Union{OpenLCDM{T}, ClosedLCDM{T}}; z::Union{Nothing, Vector{Z}} = nothing) where {T <: Real, Z <: Real} = CosmologicalModel(cosmo.h, cosmo.Ω_m, cosmo.Ω_r, cosmo.Ω_k, (-1., 0.); z = z)
-
-CosmologicalModel(cosmo::FlatWCDM{T}; z::Union{Nothing, Vector{Z}} = nothing) where {T <: Real, Z <: Real} = CosmologicalModel(cosmo.h, cosmo.Ω_m, cosmo.Ω_r, 0., (cosmo.w0, cosmo.wa); z = z)
-
-CosmologicalModel(cosmo::Union{ClosedWCDM{T}, OpenWCDM{T}}; z::Union{Nothing, Vector{Z}} = nothing) where {T <: Real, Z <: Real} = CosmologicalModel(cosmo.h, cosmo.Ω_m, cosmo.Ω_r, cosmo.Ω_k, (cosmo.w0, cosmo.wa); z = z)
 
 
 # ----------------------------------------------------------------------------------------------- #
