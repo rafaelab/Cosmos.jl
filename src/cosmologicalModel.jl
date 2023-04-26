@@ -125,17 +125,5 @@ const CosmologyPlanck(; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real
 Base.eltype(cosmo::CosmologicalModel) = typeof(cosmo._cosmology.h)
 
 
-# ----------------------------------------------------------------------------------------------- #
-# 
-# check if dimension provided is correct
-@inline function isLengthDimension(d::Unitful.AbstractQuantity) 
-	if dimension(d0) ≠ 𝐋
-		throw(DimensionMismatch("Dimension of provided quantity is not distance."))
-	end
-
-	return true
-end
-
-
 
 # ----------------------------------------------------------------------------------------------- #
