@@ -113,7 +113,7 @@ end
 @doc """
 Latest Planck's cosmology.
 """
-const CosmologyPlanck(; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real} = CosmologicalModel(cosmology(); z = z)
+const CosmologyPlanck(; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real} = CosmologicalModel{typeof(cosmology()), Float64}(cosmology(); z = z)
 
 
 # ----------------------------------------------------------------------------------------------- #
