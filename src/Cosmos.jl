@@ -47,6 +47,7 @@ import Cosmology: H, E
 include("cosmologicalModel.jl")
 include("cosmology.jl")
 include("measures.jl")
+include("densities.jl")
 
 
 end # module
