@@ -30,7 +30,12 @@ export
 	comovingVolumeElement,
 	comovingElement,
 	calculateDensityPhotons,
-	calculateDensityNeutrinos
+	calculateDensityNeutrinos,
+	computeCriticalDensity,
+	computeMatterDensity,
+	computeDarkEnergyDensity,
+	computeCurvatureDensity,
+	computeRadiationDensity
 
 
 using Cosmology
