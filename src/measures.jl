@@ -77,7 +77,7 @@ redshiftToTransverseComovingDistance(cosmo::CosmologicalModel, z::Real) = redshi
 Computes the redshift corresponding to a given comoving distance.
 """
 comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._comovingDistance2Redshift(d0)
-comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = isLengthDimension(d0) && comovingDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
+comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = comovingDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -88,7 +88,7 @@ comovingDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = isLen
 Computes the redshift corresponding to a given light-travel distance.
 """
 lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._lightTravelDistance2Redshift(d0)
-lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = isLengthDimension(d0) && lightTravelDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) 
+lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = lightTravelDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) 
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -99,7 +99,7 @@ lightTravelDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = is
 Computes the redshift corresponding to a given luminosity distance.
 """
 luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._luminosityDistance2Redshift(d0)
-luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) &&  luminosityDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) 
+luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = luminosityDistanceToRedshift(cosmo, ustrip(d0 |> u"m")) 
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -110,7 +110,7 @@ luminosityDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuant
 Computes the redshift corresponding to a given transverse comoving distance.
 """
 comovingTransverseDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._comovingTransverseDistance2Redshift(d0)
-comovingTransverseDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && comovingTransverseDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
+comovingTransverseDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = comovingTransverseDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -121,7 +121,7 @@ comovingTransverseDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Abstr
 Computes the redshift corresponding to a given angular diameter distance.
 """
 angularDiameterDistanceToRedshift(cosmo::CosmologicalModel, d0::Real) = cosmo._angularDiameterDistance2Redshift(d0)
-angularDiameterDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && angularDiameterDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
+angularDiameterDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Length) = angularDiameterDistanceToRedshift(cosmo, ustrip(d0 |> u"m"))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -132,6 +132,6 @@ angularDiameterDistanceToRedshift(cosmo::CosmologicalModel, d0::Unitful.Abstract
 Computes the comoving distance corresponding to a given light-travel distance.
 """
 lightTravelToComovingDistance(cosmo::CosmologicalModel, d0::Real) = redshiftToComovingDistance(cosmo, cosmo._lightTravelDistance2Redshift(d0))
-lightTravelToComovingDistance(cosmo::CosmologicalModel, d0::Unitful.AbstractQuantity) = isLengthDimension(d0) && lightTravelToComovingDistance(cosmo, ustrip(d0 |> u"m"))
+lightTravelToComovingDistance(cosmo::CosmologicalModel, d0::Unitful.Length) = lightTravelToComovingDistance(cosmo, ustrip(d0 |> u"m"))
 
 # ----------------------------------------------------------------------------------------------- #
