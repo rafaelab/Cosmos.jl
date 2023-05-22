@@ -22,10 +22,6 @@ export
 	comovingTransverseDistanceToRedshift,
 	angularDiameterDistanceToRedshift,
 	lightTravelToComovingDistance,
-	# lightTravelToLuminosityDistance,
-	# comovingToLightTravelDistance,
-	# luminosityToLightTravelDistance,
-	# luminosityToComovingDistance,
 	comovingVolume,
 	comovingVolumeElement,
 	comovingElement,
@@ -49,6 +45,7 @@ import Cosmology: OpenLCDM, OpenWCDM, ClosedLCDM, ClosedWCDM, FlatLCDM, FlatWCDM
 import Cosmology: H, E
 
 
+include("common.jl")
 include("cosmologicalModel.jl")
 include("cosmology.jl")
 include("measures.jl")
