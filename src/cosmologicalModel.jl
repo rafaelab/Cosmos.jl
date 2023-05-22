@@ -11,16 +11,18 @@ Any cosmology can be built using the following parameters:
 . `Ωr`: radiation density \\
 . `Ωk`: curvature density \\
 . `ΩΛ`: dark energy density \\
+. `Ωb`: baryon density (set to -1 if unavailable) \\
 . `wEOSΛ`: tuple with parameters of the equation of state for dark energy: `w = w_0 + w_a (1 - a)` \\
 
 The default constructors can be built using only the first 3 or 4 parameters.
 """
-struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: Real}
+mutable struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: AbstractFloat}
 	h::T
 	ΩΛ::T
 	Ωm::T
 	Ωr::T
 	Ωk::T
+	Ωb::T
 	wEOSΛ::Tuple{T, T}
 	_cosmology::C
 	_comovingDistance2Redshift
@@ -28,12 +30,13 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: Real}
 	_lightTravelDistance2Redshift
 	_comovingTransverse2Redshift
 	_angularDiameterDistance2Redshift
-	function CosmologicalModel{C, T}(cosmo::C; z::Union{Nothing, Vector{Z}} = nothing) where {C <: Cosmology.AbstractCosmology, T <: Real, Z <: Real}		
+	function CosmologicalModel{C, T}(cosmo::C; z::Union{Nothing, Vector{Z}} = nothing, Ωb::Real = -1.) where {C <: Cosmology.AbstractCosmology, T <: Real, Z <: Real}		
 		h = cosmo.h
 		Ωk = (C isa Union{Cosmology.AbstractClosedCosmology, Cosmology.AbstractOpenCosmology}) ? cosmo.Ω_k : zero(T)
 		Ωr = cosmo.Ω_r
 		Ωm = cosmo.Ω_m
 		ΩΛ = cosmo.Ω_Λ
+		Ωb = Float64(Ωb)
 		wEOSΛ = (C isa Union{FlatWCDM, OpenWCDM, ClosedWCDM}) ? (cosmo.w0, cosmo.wa) : (- one(T), zero(T))
 		
 		# prepare redshifts
@@ -87,7 +90,7 @@ struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: Real}
 		t2z = interpolate(dT[idxT], z[idxT], SteffenMonotonicInterpolation())
 		a2z = interpolate(dA[idxA], z[idxA], SteffenMonotonicInterpolation())
 
-		return new{typeof(cosmo), typeof(h)}(h, ΩΛ, Ωm, Ωr, Ωk, wEOSΛ, cosmo, c2z, l2z, p2z, t2z, a2z)
+		return new{typeof(cosmo), typeof(h)}(h, ΩΛ, Ωm, Ωr, Ωk, Ωk, wEOSΛ, cosmo, c2z, l2z, p2z, t2z, a2z)
 	end
 end
 
