@@ -134,4 +134,5 @@ Computes the comoving distance corresponding to a given light-travel distance.
 lightTravelToComovingDistance(cosmo::CosmologicalModel, d0::Real) = redshiftToComovingDistance(cosmo, cosmo._lightTravelDistance2Redshift(d0))
 lightTravelToComovingDistance(cosmo::CosmologicalModel, d0::Unitful.Length) = lightTravelToComovingDistance(cosmo, ustrip(d0 |> u"m"))
 
+
 # ----------------------------------------------------------------------------------------------- #
