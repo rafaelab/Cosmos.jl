@@ -36,7 +36,6 @@ mutable struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: Abstract
 		Ωr = cosmo.Ω_r
 		Ωm = cosmo.Ω_m
 		ΩΛ = cosmo.Ω_Λ
-		Ωb = Float64(Ωb)
 		wEOSΛ = (C isa Union{FlatWCDM, OpenWCDM, ClosedWCDM}) ? (cosmo.w0, cosmo.wa) : (- one(T), zero(T))
 		
 		# prepare redshifts
@@ -90,23 +89,23 @@ mutable struct CosmologicalModel{C <: Cosmology.AbstractCosmology, T <: Abstract
 		t2z = interpolate(dT[idxT], z[idxT], SteffenMonotonicInterpolation())
 		a2z = interpolate(dA[idxA], z[idxA], SteffenMonotonicInterpolation())
 
-		return new{typeof(cosmo), typeof(h)}(h, ΩΛ, Ωm, Ωr, Ωk, Ωk, wEOSΛ, cosmo, c2z, l2z, p2z, t2z, a2z)
+		return new{typeof(cosmo), typeof(h)}(h, ΩΛ, Ωm, Ωr, Ωk, Ωb, wEOSΛ, cosmo, c2z, l2z, p2z, t2z, a2z)
 	end
 end
 
-function CosmologicalModel(h::Real, Ωm::Real; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real}
+function CosmologicalModel(h::Real, Ωm::Real; args...)
 	cosmo = cosmology(h = h, OmegaM = Ωm)
-	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; z = z)
+	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
 
-function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real}
+function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real; args...)
 	cosmo = cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk)
-	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; z = z)
+	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
 
-function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real, Ωr::Real; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real}
+function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real, Ωr::Real; args...) 
 	cosmo = cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk, Omegar = Ωr)
-	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; z = z)
+	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
 
 
@@ -116,7 +115,7 @@ end
 @doc """
 Latest Planck's cosmology.
 """
-const CosmologyPlanck(; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real} = CosmologicalModel{typeof(cosmology()), Float64}(cosmology(); z = z)
+const CosmologyPlanck(; z::Union{Nothing, Vector{Z}} = nothing) where {Z <: Real} = CosmologicalModel{typeof(cosmology()), Float64}(cosmology(); z = z, Ωb = 0.023)
 
 
 # ----------------------------------------------------------------------------------------------- #
