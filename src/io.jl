@@ -12,17 +12,16 @@ Display information of `CosmologicalModel` types.
 . `cosmology`: `CosmologicalModel`-type object \\
 """
 function Base.show(io::IO, cosmology::CosmologicalModel)
-	printstyled(io, "$(typeof(cosmology)) = "; bold = true)
-	if isflat(cosmology)
+	printstyled(io, "$(typeof(cosmology)) = \n"; bold = true)
+	if isFlat(cosmology)
 		print(io, "  . shape: flat\n")
-	elseif isopen(cosmology)
+	elseif isOpen(cosmology)
 		print(io, "  . shape: open\n")
-		print(io, @sprintf("  . Ωk = %4.3e\n", cosmology.Ωk))
-	elseif isclosed(cosmology)
+	elseif isClosed(cosmology)
 		print(io, "  . shape: closed\n")
-		print(io, @sprintf("  . Ωk = %4.3e\n", cosmology.Ωk))
 	end
 	print(io, @sprintf("  . ΩΛ = %4.3e\n", cosmology.ΩΛ))
+	print(io, @sprintf("  . Ωk = %4.3e\n", cosmology.Ωk))
 	print(io, @sprintf("  . Ωm = %4.3e\n", cosmology.Ωm))
 	print(io, @sprintf("  . Ωr = %4.3e\n", cosmology.Ωr))
 	print(io, @sprintf("  . Ωb = %4.3e\n", cosmology.Ωb))
@@ -77,6 +76,7 @@ end
 	println(io, d)
 
 Display information about `AbstractDistanceMeasure` types.
+Note that distances are cosmology-dependent, but this information is not displayed.
 
 # Input
 . `io`: `IO`-type objects with standard output \\
@@ -95,6 +95,7 @@ end
 	println(io, t)
 
 Display information about `AbstractTimeMeasure` types.
+Note that times are cosmology-dependent, but this information is not displayed.
 
 # Input
 . `io`: `IO`-type objects with standard output \\

@@ -84,6 +84,26 @@ function computeDarkEnergyDensity(cosmology::CosmologicalModel; z::Real = 0.)
 	return upreferred(cosmology.ΩΛ * ρc)
 end
 
+# ----------------------------------------------------------------------------------------------- #
+# 
+@doc """
+	computeBaryonDensity(cosmology; z = 0.)
+
+Computes the density of matter in the universe at a given redshift:
+  ρb = Ωb * ρc
+
+# Input 
+. `cosmology::CosmologicalModel`: the cosmological model of interest \\
+. `z::Real`: the redshift at which to compute the density \\
+"""
+function computeBaryonDensity(cosmology::CosmologicalModel; z::Real = 0.)
+	if cosmology.Ωb < 0
+		throw(ArgumentError("Cannot compute the baryon density because the baryon fraction was not provided to the `CosmologicalModel`."))
+	end
+	ρc = computeCriticalDensity(cosmology; z = z)
+	return upreferred(cosmology.Ωb * ρc)
+end
+
 
 # ----------------------------------------------------------------------------------------------- #
 # 

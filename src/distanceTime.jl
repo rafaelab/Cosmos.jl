@@ -1,9 +1,24 @@
 # ----------------------------------------------------------------------------------------------- #
 # 
 @doc """
-Abstract supertypes for distance and time measurements.
+Abstract supertype for distance measurements.
+Sub-types include: 
+  `DistanceComoving`, 
+  `DistanceLightTravel`,
+  `DistanceAngularDiameter`,
+  `DistanceComovingTransverse`,
+  `DistanceLuminosity`.
 """
 abstract type AbstractDistanceMeasure end
+
+# ----------------------------------------------------------------------------------------------- #
+# 
+@doc """
+Abstract supertype for time measurements.
+Sub-types include: 
+  `TimeLookback`,
+  `TimeConformal`.
+"""
 abstract type AbstractTimeMeasure end
 
 
@@ -60,7 +75,7 @@ for distanceType in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter",
 
 		$(name)(cosmology::CosmologicalModel{C, T}, distance::Real) where {C, T} = $(name){T}(cosmology, distance * u"Mpc")
 
-		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, cosmology.fromRedshift[$(QuoteNode(label))](z0.value, z.value))
+		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, cosmology.fromRedshift[$(QuoteNode(label))](z.value, z0.value))
 
 		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift) where {C, T} = $(name)(cosmology, z, Redshift(T(0.)))
 
@@ -121,7 +136,7 @@ for timeType in ("Lookback", "Conformal")
 
 		$(name)(cosmology::CosmologicalModel{C, T}, time::Real) where {C, T} = $(name){T}(cosmology, time * u"yr")
 
-		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, cosmology.fromRedshift[$(QuoteNode(label))](z0.value, z.value))
+		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, cosmology.fromRedshift[$(QuoteNode(label))](z.value, z0.value))
 
 		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift) where {C, T} = $(name)(cosmology, z, Redshift(T(0)))
 
@@ -163,6 +178,7 @@ for distanceType1 in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter"
 				Type conversion from `$($(d2))` to `$($(d1))`.
 				It ultimately enables conversion implicit conversions and the usage of the operator `|>`.
 				"""
+				$(d1){D}(distance::($(d2))) where {D} = $(d1)(convert(D, distance.cosmology), Redshift{D}(distance))
 				$(d1)(distance::($(d2))) = $(d1)(distance.cosmology, Redshift(distance))
 			end
 		end
@@ -182,7 +198,8 @@ for timeType1 in ("Lookback", "Conformal")
 				Type conversion from `$($(t2))` to `$($(t1))`.
 				It ultimately enables conversion implicit conversions and the usage of the operator `|>`.
 				"""
-				$(t1)(time::$(t2)) = $(t1)(time.cosmology, Redshift(time))
+				$(t1){T}(time::$(t2)) where {T} = $(t1)(convert(T, time.cosmology), Redshift{T}(time))
+				$(t1)(time::($(t2))) = $(t1)(time.cosmology, Redshift(time))
 			end
 		end
 	end
@@ -203,8 +220,8 @@ for distanceType1 in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter"
 				It assumes that the underlying `CosmologicalModel` is the same for both.
 				These conversions assume distances with respect to present time (z=0).
 				"""
-				Base.convert(::Type{$(d1){D1}}, d::$(d2){D2}) where {D1, D2} = $(d1){promote_type(D1, D2)}(convert(D1, d.cosmology), Redshift(d))
-				Base.convert(::Type{$(d1)}, d::$(d2){D2}) where {D2} = $(d2) |> $(d1)
+				Base.convert(::Type{$(d1){D1}}, d::$(d2)) where {D1} = $(d1)(convert(D1, d.cosmology), Redshift{D1}(d))
+				Base.convert(::Type{$(d1)}, d::$(d2)) = $(d1)(d.cosmology, Redshift(d))
 			end
 		end
 	end
@@ -232,57 +249,63 @@ for timeType1 in ("Lookback", "Conformal")
 	end
 end
 
-# # ----------------------------------------------------------------------------------------------- #
-# #
-# @doc """
-# Conversion from `TimeLookback` to `DistanceLightTravel` using Julia's built-in function `Base.convert`.
-# """
-# Base.convert(::Type{DistanceLightTravel}, time::TimeLookback) = (time.value * SpeedOfLightInVacuum) |> u"Mpc"
-
-# # ----------------------------------------------------------------------------------------------- #
-# #
-# @doc """
-# Conversion from `TimeConformal` to `DistanceComoving` using Julia's built-in function `Base.convert`.
-# """
-# Base.convert(::Type{DistanceComoving}, time::TimeConformal) = (time.value * SpeedOfLightInVacuum) |> u"Mpc"
-
-# # ----------------------------------------------------------------------------------------------- #
-# #
-# @doc """
-# Conversion from `DistanceLightTravel` to `TimeLookback` using Julia's built-in function `Base.convert`.
-# """
-# Base.convert(::Type{TimeLookback}, distance::DistanceLightTravel) = (distance.value / SpeedOfLightInVacuum) |> u"yr"
-
-# # ----------------------------------------------------------------------------------------------- #
-# #
-# @doc """
-# Conversion from `DistanceLightTravel` to `TimeLookback` using Julia's built-in function `Base.convert`.
-# """
-# Base.convert(::Type{TimeConformal}, distance::DistanceComoving) = (distance.value / SpeedOfLightInVacuum) |> u"yr"
-
 # ----------------------------------------------------------------------------------------------- #
+#
+# Implement conversion functions between distance measures and redshift/scale factor using `Base.convert`.
+for measureType in ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeConformal", "TimeLookback")
+	measure = Symbol("$(measureType)")
+	@eval begin
+		@doc """
+		Type conversion from `$($(measure))` to `Redshift`.
+		These conversions assume distances/times with respect to present time (z=0).
+		"""
+		Base.convert(::Type{Redshift{Z}}, s::$(measure)) where {Z} = s |> Redshift{Z}
+		Base.convert(::Type{Redshift}, s::$(measure)) = s |> Redshift
+		
 
-# DistanceComoving(cosmol::CosmologicalModel, z1::Redshift, z2::Redshift) = DistanceComoving{eltype(cosmol)}(cosmol.cosmology, comoving_radial_dist(cosmol.cosmology, z2.z, z1.z))
-# DistanceComoving(cosmol::CosmologicalModel, z::Redshift) = DistanceComoving(cosmol, z, Redshift(0.))
-	
-# DistanceLuminosity(cosmol::CosmologicalModel, z::Redshift) = DistanceLuministy{eltype(cosmol)}(luminosity_dist(cosmol.cosmology, z.z))
-# DistanceLuminosity(cosmol::CosmologicalModel, z1::Redshift, z2::Redshift) = DistanceLuminosity(cosmol, z1) - DistanceLuminosity(cosmol, z2)
+		@doc """
+		Type conversion from `$($(measure))` to `ScaleFactor`.
+		These conversions assume distances/times with respect to present time (z=0).
+		"""
+		Base.convert(::Type{ScaleFactor{A}}, s::$(measure)) where {A} = s |> ScaleFactor{A}
+		Base.convert(::Type{ScaleFactor}, s::$(measure)) = s |> ScaleFactor
 
 
+		@doc """
+		Type conversion from `Redshift` to `$($(measure))`.
+		These conversions assume distances/times with respect to present time (z=0).
+		"""
+		Base.convert(::Type{$(measure){S}}, z::Redshift, cosmology::CosmologicalModel) where {S} = $(measure)(convert(S, cosmology), convert(S, z))
+		Base.convert(::Type{$(measure)}, z::Redshift, cosmology::CosmologicalModel) = convert($(measure){eltype(cosmology)}, z, cosmology)
 
+		@doc """
+		Type conversion from `ScaleFactor` to `$($(measure))`.
+		These conversions assume distances/times with respect to present time (z=0).
+		"""
+		Base.convert(::Type{$(measure){S}}, a::ScaleFactor, cosmology::CosmologicalModel) where {S} = $(measure)(convert(S, cosmology), a)
+		Base.convert(::Type{$(measure)}, a::ScaleFactor, cosmology::CosmologicalModel) = convert($(measure){eltype(cosmology)}, a, cosmology)
+	end
+end
 
 # ----------------------------------------------------------------------------------------------- #
 #
+# Implement type conversion and promotion rules between distance/time measures using `Base.convert`.
+for measureType in ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeConformal", "TimeLookback")
+	measure = Symbol("$(measureType)")
+	@eval begin
+		@doc """
+		Type conversions for `$($(measure))`.
+		"""
+		Base.convert(::Type{$(measure){T}}, s::$(measure)) where {T} = $(measure){T}(convert(T, s.cosmology), T(s.value))
+		Base.convert(::Type{T}, s::$(measure)) where {T <: Real} = $(measure){T}(convert(T, s.cosmology), T(s.value))
 
-# Base.convert(::Type{Redshift{Z}}, d::DistanceLightTravel{D}) where {Z <: Real, D <: Real} = Redshift{Z}(d.cosmology._lightTravelDistance2Redshift(ustrip(d.d |> u"m")))
-# Base.convert(::Type{Redshift{Z}}, d::DistanceLightTravel{D}) where {Z <: Real, D <: Real} = Redshift{Z}(d.cosmology._lightTravelDistance2Redshift(ustrip(d.d |> u"m")))
 
-# redshiftToComovingDistance(cosmo::CosmologicalModel, z0::Real, z1::Real) = comoving_radial_dist(cosmo._cosmology, z0, z1) 
-# redshiftToComovingDistance(cosmo::CosmologicalModel, z::Real) = comoving_radial_dist(cosmo._cosmology, zero(eltype(cosmo)), z)
-
-
-# Redshift(d1::Light)
-
+		@doc """
+		Promotion rules conversions for `$($(measure))`.
+		"""
+		Base.promote_rule(::Type{$(measure){T}}, ::Type{$(measure){U}}) where {T, U} = promote_type(T, U)
+	end
+end
 
 
 # ----------------------------------------------------------------------------------------------- #
