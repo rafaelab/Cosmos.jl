@@ -75,6 +75,8 @@ Computes the Hubble distance for a given cosmology and possibly at a given redsh
 """
 ageOfUniverse(cosmo::CosmologicalModel) = age(cosmo._cosmology)
 ageOfUniverse(cosmo::CosmologicalModel, z::Real) = age(cosmo._cosmology, z)
+ageOfUniverse(cosmo::CosmologicalModel, z::Redshift) = ageOfUniverse(cosmo, z.value)
+ageOfUniverse(cosmo::CosmologicalModel, a::ScaleFactor) = age(cosmo._cosmology, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -85,6 +87,8 @@ ageOfUniverse(cosmo::CosmologicalModel, z::Real) = age(cosmo._cosmology, z)
 Calculates the comoving volume at a given redshift.
 """
 comovingVolume(cosmo::CosmologicalModel, z::Real) = comoving_volume(cosmo._cosmology, z)
+comovingVolume(cosmo::CosmologicalModel, z::Redshift) = comovingVolume(cosmo, z.value)
+comovingVolume(cosmo::CosmologicalModel, a::ScaleFactor) = comovingVolume(cosmo, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -94,7 +98,9 @@ comovingVolume(cosmo::CosmologicalModel, z::Real) = comoving_volume(cosmo._cosmo
 
 Calculates the comoving volume element at a given redshift.
 """
-comovingVolumeElement(cosmo::CosmologicalModel, z0::Real) = comoving_volume_element(cosmo._cosmology, z0)
+comovingVolumeElement(cosmo::CosmologicalModel, z::Real) = comoving_volume_element(cosmo._cosmology, z)
+comovingVolumeElement(cosmo::CosmologicalModel, z::Redshift) = comovingVolumeElement(cosmo, z.value)
+comovingVolumeElement(cosmo::CosmologicalModel, a::ScaleFactor) = comovingVolumeElement(cosmo, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -106,7 +112,9 @@ Calculates the comoving line element at a given redshift.
 This is Hogg's eq. 28 adjusted.
 NOTE: check nomenclature
 """
-comovingElement(cosmo::CosmologicalModel, z0::Float64) = hubbleDistance(cosmo, z0)  / E(cosmo._cosmology, z0) / (1 + z0)
+comovingElement(cosmo::CosmologicalModel, z::Float64) = hubbleDistance(cosmo, z)  / E(cosmo._cosmology, z) / (1 + z)
+comovingElement(cosmo::CosmologicalModel, z::Redshift) = comovingElement(cosmo, z.value)
+comovingElement(cosmo::CosmologicalModel, a::ScaleFactor) = comovingElement(cosmo, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
