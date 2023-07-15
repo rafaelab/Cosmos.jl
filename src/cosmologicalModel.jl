@@ -100,17 +100,17 @@ function CosmologicalModel(cosmo::C; args...) where {C <: AbstractCosmology}
 end
 
 function CosmologicalModel(h::Real, Ωm::Real; args...)
-	cosmo = cosmology(h = h, OmegaM = Ωm)
+	cosmo = Cosmology.cosmology(h = h, OmegaM = Ωm)
 	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
 
 function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real; args...)
-	cosmo = cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk)
+	cosmo = Cosmology.cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk)
 	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
 
 function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real, Ωr::Real; args...) 
-	cosmo = cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk, Omegar = Ωr)
+	cosmo = Cosmology.cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk, OmegaR = Ωr)
 	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
 
