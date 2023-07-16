@@ -77,7 +77,7 @@ for distanceType in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter",
 
 		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, cosmology.fromRedshift[$(QuoteNode(label))](z.value, z0.value))
 
-		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift) where {C, T} = $(name)(cosmology, z, Redshift(T(0.)))
+		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift) where {C, T} = $(name)(cosmology, Redshift(T(0.)), z)
 
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor, a0::ScaleFactor) where {C, T} = $(name){T}(cosmology, Redshift(a), Redshift(a0))
 
