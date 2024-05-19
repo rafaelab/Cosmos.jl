@@ -61,17 +61,17 @@ for distanceType in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter",
 
 		# Input
 		. `cosmology::CosmologicalModel`: the cosmological model to be used as reference \\
-		. `d::Unitful.Length{T}`: the distance \\
+		. `d::Length{T}`: the distance \\
 		"""
 		mutable struct $(name){T <: Real} <: AbstractDistanceMeasure
 			cosmology::CosmologicalModel
-			value::Unitful.Length{T}
-			function $(name){T}(cosmology::CosmologicalModel{C, T}, distance::Unitful.Length) where {C, T}
-				return new{T}(cosmology, distance |> u"Mpc")
+			value::Length{T}
+			function $(name){T}(cosmology::CosmologicalModel{C, T}, distance::Length) where {C, T}
+				return new{T}(cosmology, T(distance |> u"Mpc"))
 			end
 		end
 
-		$(name)(cosmology::CosmologicalModel{C, T}, distance::Unitful.Length) where {C, T} = $(name){T}(cosmology, distance)
+		$(name)(cosmology::CosmologicalModel{C, T}, distance::Length) where {C, T} = $(name){T}(cosmology, distance)
 
 		$(name)(cosmology::CosmologicalModel{C, T}, distance::Real) where {C, T} = $(name){T}(cosmology, distance * u"Mpc")
 
@@ -82,6 +82,16 @@ for distanceType in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter",
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor, a0::ScaleFactor) where {C, T} = $(name){T}(cosmology, Redshift(a), Redshift(a0))
 
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor) where {C, T} = $(name)(cosmology, ScaleFactor(a), ScaleFactor(T(1.)))
+
+		$(name)(distance::Union{Length, Real}) = $(name)(_defaultCosmology, distance)
+
+		$(name)(z::Redshift, z0::Redshift) = $(name)(_defaultCosmology, z, z0)
+
+		$(name)(z::Redshift) = $(name)(_defaultCosmology, z)
+
+		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(_defaultCosmology, a, a0)
+
+		$(name)(a::ScaleFactor) = $(name)(_defaultCosmology, a)
 
 		Redshift{Z}(distance::$(name)) where {Z} = Redshift{Z}(distance.cosmology.toRedshift[$(QuoteNode(label))](distance.value))
 
@@ -122,17 +132,17 @@ for timeType in ("Lookback", "Conformal")
 
 		# Input
 		. `cosmology::CosmologicalModel`: the cosmological model to be used as reference \\
-		. `t::Unitful.Time{T}`: the time \\
+		. `t::Time{T}`: the time \\
 		"""
 		mutable struct $(name){T <: Real} <: AbstractTimeMeasure
 			cosmology::CosmologicalModel
-			value::Unitful.Time{T}
-			function $(name){T}(cosmology::CosmologicalModel{C, T}, time::Unitful.Time{U}) where {C, T, U}
-				return new{T}(cosmology, time |> u"yr")
+			value::Time{T}
+			function $(name){T}(cosmology::CosmologicalModel{C, T}, time::Time) where {C, T}
+				return new{T}(cosmology, T(time |> u"yr"))
 			end
 		end
 
-		$(name)(cosmology::CosmologicalModel{C, T}, time::Unitful.Length) where {C, T} = $(name){T}(cosmology, time)
+		$(name)(cosmology::CosmologicalModel{C, T}, time::Length) where {C, T} = $(name){T}(cosmology, time)
 
 		$(name)(cosmology::CosmologicalModel{C, T}, time::Real) where {C, T} = $(name){T}(cosmology, time * u"yr")
 
@@ -143,6 +153,16 @@ for timeType in ("Lookback", "Conformal")
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor, a0::ScaleFactor) where {C, T} = $(name)(cosmology, Redshift(a), Redshift(a0))
 
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor) where {C, T} = $(name)(cosmology, ScaleFactor(a), ScaleFactor(T(1.)))
+
+		$(name)(time::Union{Length, Real}) = $(name)(_defaultCosmology, time)
+
+		$(name)(z::Redshift, z0::Redshift) = $(name)(_defaultCosmology, z, z0)
+
+		$(name)(z::Redshift) = $(name)(_defaultCosmology, z)
+
+		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(_defaultCosmology, a, a0)
+
+		$(name)(a::ScaleFactor) = $(name)(_defaultCosmology, a)
 
 		Redshift{Z}(time::$(name)) where {Z} = Redshift{Z}(time.cosmology.toRedshift[$(QuoteNode(label))](time.value))
 
