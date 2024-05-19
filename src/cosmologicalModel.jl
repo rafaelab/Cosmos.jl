@@ -253,6 +253,8 @@ function CosmologyPlanck(; T::Type = Float64)
 	return CosmologicalModel{typeof(cosmo), T}(cosmo; Ωb = T(0.023), Nν = T(3.04), Tcmb = T(2.7255))
 end
 
+@setDefaultCosmology(CosmologyPlanck())
+
 # ----------------------------------------------------------------------------------------------- #
 # 
 @doc """
