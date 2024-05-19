@@ -14,12 +14,6 @@ makedocs(
 	workdir = joinpath(@__DIR__, ".."),
 	pages = [
 		"Home" => "index.md",
-		# "Graphs" => "graphs.md",
-		# "Histograms" => "histograms.md",
-		# "Interpolations" => "interpolations.md",
-		# "Miscellaneous" => "miscellaneous.md",
-		# "Scales" => "scales.md",
-		# "Visualisation" => "visualisation.md"
 	]
 )
 
