@@ -44,11 +44,30 @@ using Reexport
 @reexport using UnitfulAstro
 
 import Cosmology
-import Cosmology: H, E
-import Cosmology: AbstractCosmology
-import Cosmology: OpenLCDM, ClosedLCDM, FlatLCDM
-import Cosmology: OpenWCDM, ClosedWCDM, FlatWCDM
-import Cosmology: angular_diameter_dist, comoving_radial_dist, comoving_transverse_dist, luminosity_dist, lookback_time
+
+import Cosmology:
+	H,
+	E,
+	AbstractCosmology,
+	OpenLCDM, 
+	ClosedLCDM, 
+	FlatLCDM,
+	OpenWCDM, 
+	ClosedWCDM, 
+	FlatWCDM,
+	angular_diameter_dist, 
+	comoving_radial_dist, 
+	comoving_transverse_dist, 
+	luminosity_dist, 
+	lookback_time
+import Unitful:
+	Length,
+	Temperature,
+	Time,
+	LengthUnits,
+	TemperatureUnits,
+	TimeUnits
+
 
 
 include("common.jl") 
