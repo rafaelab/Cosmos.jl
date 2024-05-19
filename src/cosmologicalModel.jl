@@ -18,19 +18,19 @@ The equation of state follows the Chevallier-Polarski-Linder parametrisation: \\
 The default constructors can be built using only the first 3 or 4 parameters.
 
 # Members
-. `h::Real`: dimensionless Hubble constant \\
-. `Ωm::Real`: matter density \\
-. `Ωr::Real`: radiation density \\
-. `Ωk::Real`: curvature density \\
-. `ΩΛ::Real`: dark energy density \\
-. `Ωb::Real`: baryon density (set to -1 if unavailable) \\
-. `Nν::Real`: number of effective neutrino species (defaults to 3.04, following Planck) \\
-. `Tcmb::Real`: CMB temperature at present time (defaults to 2.7255 K, following Planck) \\
-. `wEOSΛ::NTuple{2, Real}`: tuple with parameters of the equation of state for dark energy: `w = w_0 + w_a (1 - a)` \\
-. `cosmology::AbstractCosmology`: object from `Cosmology.jl` \\
-. `toRedshift::Dict{Symbol, Function}`: functions to convert distance/time to redshift (`:comoving`, `:lightTravel`, `:angularDiameter`,`:transverseComoving`, `:luminosity`, `:lookback`, `:conformal`) \\
+. `h` [`Real`]: dimensionless Hubble constant \\
+. `Ωm` [`Real`]: matter density \\
+. `Ωr` [`Real`]: radiation density \\
+. `Ωk` [`Real`]: curvature density \\
+. `ΩΛ` [`Real`]: dark energy density \\
+. `Ωb` [`Real`]: baryon density (set to -1 if unavailable) \\
+. `Nν` [`Real`]: number of effective neutrino species (defaults to 3) \\
+. `Tcmb` [`Real`]: CMB temperature at present time (defaults to 2.7255 K, following Planck) \\
+. `wEOSΛ` [`NTuple{2, Real}`]: tuple with parameters of the equation of state for dark energy: `w = w_0 + w_a (1 - a)` \\
+. `cosmology` [`AbstractCosmology``]: object from `Cosmology.jl` \\
+. `toRedshift` [`Dict{Symbol, Function}`]: functions to convert distance/time to redshift (`:comoving`, `:lightTravel`, `:angularDiameter`,`:transverseComoving`, `:luminosity`, `:lookback`, `:conformal`) \\
 . `fromRedshift::Dict{Symbol, Function}`: functions to convert distance/time from redshift (`:comoving`, `:lightTravel`, `:angularDiameter`, `:transverseComoving`, `:luminosity`, `:lookback`, `:conformal`) \\
-. `zArray::Maybe{AbstractVector}`: array of values of redshift to build distance/time conversion functions; if nothing defaults to built-in values \\
+. `zArray` [`Vector{T}`]: array of values of redshift to build distance/time conversion functions; if nothing defaults to built-in values \\
 
 # Examples
 ```
@@ -48,8 +48,11 @@ The default constructors can be built using only the first 3 or 4 parameters.
 	cosmo2 = CosmologicalModel(h, Ωm; Tcmb = Tcmb,  Nν = Nν) # assumes Ωr = 0
 	cosmo3 = CosmologicalModel(h, Ωm, Ωk; Tcmb = Tcmb,  Nν = Nν) # if geometry is not flat and Ωr = 0
 	cosmo4 = CosmologicalModel(h, Ωm, Ωk, Ωr; Tcmb = Tcmb,  Nν = Nν) # includes radiation and non-flat geometry 
-
 ```
+
+# To do
+. Consider taking `Unitful` quantities. \\
+. Should this struct be immutable?\\
 """
 mutable struct CosmologicalModel{C <: AbstractCosmology, T <: Real}
 	h::T
@@ -118,7 +121,10 @@ end
 # ----------------------------------------------------------------------------------------------- #
 # 
 @doc """
-Helper functions to iniatilise conversions of distance or time to/from redshiftl.
+Helper function (unexported) to iniatilise conversions of distance or time to/from redshift.
+
+# To do
+. Consider speeding up building this function using `@threads`
 """
 function conversionsFromRedshift(cosmo::AbstractCosmology)
 	T = eltype(cosmo)
