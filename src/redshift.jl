@@ -37,8 +37,8 @@ ScaleFactor(a::Real) = ScaleFactor{typeof(a)}(a)
 
 Get data type.
 """
-Base.eltype(redshift::Redshift{T}) where {T} = T
-Base.eltype(scaleFactor::ScaleFactor{T}) where {T} = T
+Base.eltype(::Redshift{Z}) where {Z} = Z
+Base.eltype(::ScaleFactor{A}) where {A} = A
 
 # ----------------------------------------------------------------------------------------------- #
 #
@@ -67,8 +67,6 @@ Redshift(scaleFactor::ScaleFactor) = convert(Redshift{eltype(scaleFactor)}, scal
 @doc """
 Operations with `Redshift`.
 """
-# Base.:(+)(z1::Redshift{T}, z2::Redshift{U}) where {T, U} = Redshift{promote_type(T, U)}(z1.value + z2.value)
-# Base.:(-)(z1::Redshift{T}, z2::Redshift{U}) where {T, U} = Redshift{promote_type(T, U)}(z1.value - z2.value)
 Base.:(==)(z1::Redshift, z2::Redshift) = z1.value == z2.value
 Base.:(!=)(z1::Redshift, z2::Redshift) = z1.value ≠ z2.value
 Base.isequal(z1::Redshift, z2::Redshift) = z1.value === z2.value
@@ -79,8 +77,6 @@ Base.isequal(z1::Redshift, z2::Redshift) = z1.value === z2.value
 @doc """
 Operations with `ScaleFactor`.
 """
-# Base.:(+)(a1::ScaleFactor{T}, a2::ScaleFactor{U}) where {T, U} = ScaleFactor{promote_type(T, U)}(a1.value + a2.value)
-# Base.:(-)(a1::ScaleFactor{T}, a2::ScaleFactor{U}) where {T, U} = ScaleFactor{promote_type(T, U)}(a1.value - a2.value)
 Base.:(==)(a1::ScaleFactor, a2::ScaleFactor) = a1.value == a2.value
 Base.:(!=)(a1::ScaleFactor, a2::ScaleFactor) = a1.value ≠ a2.value
 Base.isequal(a1::ScaleFactor, a2::ScaleFactor) = a1.value === a2.value
