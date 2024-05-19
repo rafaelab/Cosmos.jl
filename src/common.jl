@@ -12,7 +12,7 @@ const Maybe{T} = Union{Nothing, T}
 for cosmologyType in ("FlatLCDM", "OpenLCDM", "ClosedLCDM", "FlatWCDM", "OpenWCDM", "ClosedWCDM")
 	@eval begin
 		@doc """
-		Useful extensions of Cosmology.jl to enable type conversion related to `$($(Symbol("$(cosmologyType)")))`.
+		Useful extensions of `Cosmology.jl`` to enable type conversion related to `$($(Symbol("$(cosmologyType)")))`.
 		"""
 		function Base.convert(::Type{T}, cosmo::$(Symbol("$(cosmologyType)")){U}) where {T <: Real, U} 
 			fields = fieldnames(typeof(cosmo))
@@ -32,9 +32,30 @@ end
 # ----------------------------------------------------------------------------------------------- #
 # 
 @doc """
-Get the underlying data type of an `AbstractCosmology` object (from Cosmology.jl).
+Get the underlying data type of an `AbstractCosmology` object (from `Cosmology.jl`).
 """
 Base.eltype(cosmo::AbstractCosmology) = typeof(cosmo.h)
+
+
+# ----------------------------------------------------------------------------------------------- #
+# 
+@doc """
+Define global variable to hold information about the default cosmological model.
+"""
+global _defaultCosmology = nothing
+
+# ----------------------------------------------------------------------------------------------- #
+# 
+@doc """
+Set the value of the global default cosmological model.
+This will enable faster function calls. 
+For instances, instead of `d = DistanceComovingTransverse(1., cosmology)`, the second argument will become the default value.
+"""
+macro setDefaultCosmology(cosmology)
+	quote
+		global _defaultCosmology = $cosmology
+	end
+end
 
 
 # ----------------------------------------------------------------------------------------------- #
