@@ -1,10 +1,12 @@
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """
+@doc raw"""
 	computeCriticalDensity(cosmology; z = 0.)
 
 Computes the critical density of the universe at a given redshift:
-  ρc = 3 H^2(z) / 8π G
+```math
+	\rho_\text{c} = 3 \dfrac{3 H^2(z)}{8 \pi G}
+```
 
 # Input 
 . `cosmology::CosmologicalModel`: the cosmological model of interest \\
@@ -17,11 +19,13 @@ end
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """
+@doc raw"""
 	computeMatterDensity(cosmology; z = 0.)
 
 Computes the density of matter in the universe at a given redshift:
-  ρm = Ωm * ρc
+```math
+	\rho_\text{m} = \Omega_\text{m} \rho_\text{c}
+```
 
 # Input 
 . `cosmology::CosmologicalModel`: the cosmological model of interest \\
@@ -35,11 +39,13 @@ end
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """
+@doc raw"""
 	computeRadiationDensity(cosmology; z = 0.)
 
 Computes the density of matter in the universe at a given redshift:
-  ρr = Ωr * ρc
+```math
+	\rho_\text{r} = \Omega_\text{r} \rho_\text{c}
+```
 
 # Input 
 . `cosmology::CosmologicalModel`: the cosmological model of interest \\
@@ -52,11 +58,13 @@ end
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """
+@doc raw"""
 	computeCurvatureDensity(cosmology; z = 0.)
 
 Computes the density of matter in the universe at a given redshift:
-  ρk = Ωk * ρc
+```math
+	\rho_\text{k} = \Omega_\text{k} \rho_\text{c}
+```
 
 # Input 
 . `cosmology::CosmologicalModel`: the cosmological model of interest \\
@@ -69,11 +77,13 @@ end
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """
+@doc raw"""
 	computeDarkEnergyDensity(cosmology; z = 0.)
 
 Computes the density of matter in the universe at a given redshift:
-  ρΛ = ΩΛ * ρc
+```math
+  \rho_\text{\Lambda} = \Omega_\Lambda \rho_\text{c}
+```
 
 # Input 
 . `cosmology::CosmologicalModel`: the cosmological model of interest \\
@@ -86,20 +96,20 @@ end
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """
+@doc raw"""
 	computeBaryonDensity(cosmology; z = 0.)
 
 Computes the density of matter in the universe at a given redshift:
-  ρb = Ωb * ρc
+```math
+  \rho_\text{b} = \Omega_\text{b} \rho__\text{c}
+```
 
 # Input 
 . `cosmology::CosmologicalModel`: the cosmological model of interest \\
 . `z::Real`: the redshift at which to compute the density \\
 """
 function computeBaryonDensity(cosmology::CosmologicalModel; z::Real = 0.)
-	if cosmology.Ωb < 0
-		throw(ArgumentError("Cannot compute the baryon density because the baryon fraction was not provided to the `CosmologicalModel`."))
-	end
+	cosmology.Ωb < 0 || throw(ArgumentError("Cannot compute the baryon density because the baryon fraction was not provided to the `CosmologicalModel`."))
 	ρc = computeCriticalDensity(cosmology; z = z)
 	return upreferred(cosmology.Ωb * ρc)
 end
