@@ -26,8 +26,11 @@ jobs:
           JULIA_PKG_SERVER: ""
       - run: |
           julia --project=docs -e '
+            import Pkg
+            Pkg.add("Documenter")
+            
             using Documenter: doctest
-        
+
             using Cosmos
             doctest(Cosmos)'
       - run: julia --project=docs docs/make.jl
