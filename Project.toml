@@ -1,7 +1,7 @@
 name = "Cosmos"
 uuid = "78433a98-c9b8-45ad-92d3-77baa2d1b51d"
 authors = ["Rafael <rafaelab@users.noreply.github.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Cosmology = "76746363-e552-5dba-9a5a-cef6fa9cc5ab"
@@ -11,3 +11,12 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 UnitfulAstro = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
+
+[compat]
+Cosmology = "1.0.3"
+Interpolations = "0.15.1"
+PhysicalConstants = "0.2.4"
+Printf = "1.11.0"
+Reexport = "1.2.2"
+Unitful = "1.22.0"
+UnitfulAstro = "1.2.2"
