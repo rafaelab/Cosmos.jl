@@ -2,7 +2,6 @@ using Test
 using Unitful
 using UnitfulAstro
 
-push!(LOAD_PATH, "../Cosmos.jl")
 using Cosmos
 
 
