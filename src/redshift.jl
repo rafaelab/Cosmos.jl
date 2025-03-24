@@ -5,6 +5,7 @@ Convenient object to handle redshifts.
 """
 struct Redshift{T <: Real}
 	value::T
+
 	function Redshift{T}(z::Real) where {T}
 		z > -1. || throw(DomainError("Redshift cannot be less than or equal to -1."))
 		return new{T}(z)
@@ -20,6 +21,7 @@ Convenient object to handle scale factors.
 """
 struct ScaleFactor{T <: Real}
 	value::T
+	
 	function ScaleFactor{T}(a::Real) where {T}
 		a ≥ 0. || throw(DomainError("Scale factor cannot be negative or zero."))
 		return new{T}(a)

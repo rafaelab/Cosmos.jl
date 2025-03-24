@@ -9,7 +9,7 @@ const Maybe{T} = Union{Nothing, T}
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-for cosmologyType in ("FlatLCDM", "OpenLCDM", "ClosedLCDM", "FlatWCDM", "OpenWCDM", "ClosedWCDM")
+for cosmologyType ∈ ("FlatLCDM", "OpenLCDM", "ClosedLCDM", "FlatWCDM", "OpenWCDM", "ClosedWCDM")
 	@eval begin
 		@doc """
 		Useful extensions of `Cosmology.jl`` to enable type conversion related to `$($(Symbol("$(cosmologyType)")))`.

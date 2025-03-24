@@ -68,6 +68,7 @@ mutable struct CosmologicalModel{C <: AbstractCosmology, T <: Real}
 	toRedshift::Dict{Symbol, Function}
 	fromRedshift::Dict{Symbol, Function}
 	zArray::Vector{T}
+
 	function CosmologicalModel{C, T}(cosmo::C; Ωb::Real = -1., Tcmb::Real = 2.7255, Nν::Real = 3., z::Maybe{AbstractVector} = nothing) where {C <: AbstractCosmology, T <: Real}		
 		h = cosmo.h
 		Ωr = cosmo.Ω_r
@@ -161,7 +162,7 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 		append!(z, collect(range(1., 2.; length = 21)))
 		append!(z, 10 .^ collect(range(2., 4.; length = 41)))
 		unique!(z)
- 	else
+	else
 		z = convert(Vector{T}, z)
 	end
 	z = z[z .> -1.0]
@@ -171,7 +172,7 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 	dC, dL, dP, dT, dA = T[], T[], T[], T[], T[]
 	tC, tL = T[], T[]
 
-	@simd for i in eachindex(z)
+	@simd for i ∈ eachindex(z)
 		dC0 = comoving_radial_dist(cosmo, z[i])
 		dL0 = luminosity_dist(cosmo, z[i]) 
 		dT0 = comoving_transverse_dist(cosmo, z[i])

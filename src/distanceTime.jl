@@ -66,6 +66,7 @@ for distanceType in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter",
 		mutable struct $(name){T <: Real} <: AbstractDistanceMeasure
 			cosmology::CosmologicalModel
 			value::Length{T}
+
 			function $(name){T}(cosmology::CosmologicalModel{C, T}, distance::Length) where {C, T}
 				return new{T}(cosmology, T(distance |> u"Mpc"))
 			end
@@ -137,6 +138,7 @@ for timeType in ("Lookback", "Conformal")
 		mutable struct $(name){T <: Real} <: AbstractTimeMeasure
 			cosmology::CosmologicalModel
 			value::Time{T}
+
 			function $(name){T}(cosmology::CosmologicalModel{C, T}, time::Time) where {C, T}
 				return new{T}(cosmology, T(time |> u"yr"))
 			end
@@ -178,7 +180,7 @@ end
 # ----------------------------------------------------------------------------------------------- #
 #
 # Implementation of `Base.eltype`.
-for measure in ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeLookback", "TimeConformal")
+for measure ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeLookback", "TimeConformal")
 	name = Symbol("$(measure)")
 	@eval begin
 		Base.eltype(s::$(name){T}) where {T} = T
@@ -188,8 +190,8 @@ end
 # ----------------------------------------------------------------------------------------------- #
 #
 # Implement conversion functions between distance measures using `|>`.
-for distanceType1 in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
-	for distanceType2 in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
+for distanceType1 ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
+	for distanceType2 ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
 		d1 = Symbol("Distance$(distanceType1)")
 		d2 = Symbol("Distance$(distanceType2)")
 		if d1 ≠ d2
@@ -208,8 +210,8 @@ end
 # ----------------------------------------------------------------------------------------------- #
 #
 # Implement conversion functions between time measures using `|>`.
-for timeType1 in ("Lookback", "Conformal")
-	for timeType2 in ("Lookback", "Conformal")
+for timeType1 ∈ ("Lookback", "Conformal")
+	for timeType2 ∈ ("Lookback", "Conformal")
 		t1 = Symbol("Time$(timeType1)")
 		t2 = Symbol("Time$(timeType2)")
 		if t1 ≠ t2
@@ -228,8 +230,8 @@ end
 # ----------------------------------------------------------------------------------------------- #
 #
 # Implement conversion functions between distance measures using `Base.convert`.
-for distanceType1 in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
-	for distanceType2 in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
+for distanceType1 ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
+	for distanceType2 ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
 		d1 = Symbol("Distance$(distanceType1)")
 		d2 = Symbol("Distance$(distanceType2)")
 		if d1 ≠ d2
@@ -250,8 +252,8 @@ end
 # ----------------------------------------------------------------------------------------------- #
 #
 # Implement conversion functions between time measures using `Base.convert`.
-for timeType1 in ("Lookback", "Conformal")
-	for timeType2 in ("Lookback", "Conformal")
+for timeType1 ∈ ("Lookback", "Conformal")
+	for timeType2 ∈ ("Lookback", "Conformal")
 		t1 = Symbol("Time$(timeType1)")
 		t2 = Symbol("Time$(timeType2)")
 		if t1 ≠ t2
@@ -272,7 +274,7 @@ end
 # ----------------------------------------------------------------------------------------------- #
 #
 # Implement conversion functions between distance measures and redshift/scale factor using `Base.convert`.
-for measureType in ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeConformal", "TimeLookback")
+for measureType ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeConformal", "TimeLookback")
 	measure = Symbol("$(measureType)")
 	@eval begin
 		@doc """
@@ -310,7 +312,7 @@ end
 # ----------------------------------------------------------------------------------------------- #
 #
 # Implement type conversion and promotion rules between distance/time measures using `Base.convert`.
-for measureType in ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeConformal", "TimeLookback")
+for measureType ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeConformal", "TimeLookback")
 	measure = Symbol("$(measureType)")
 	@eval begin
 		@doc """
