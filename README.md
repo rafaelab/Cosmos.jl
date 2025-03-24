@@ -3,6 +3,8 @@
 Useful tools for astrophysics and cosmology. 
 It wraps and extends [Cosmology.jl](https://github.com/JuliaAstro/Cosmology.jl/).
 
+Things should work, but the code has not yet been thoroughly tested.
+
 
 ## Examples
 
@@ -29,6 +31,8 @@ It can also get a distance between two redshifts:
 ```
 d = DistanceLightTravel(cosmology, Redshift(5.), Redshift(0.5))
 ```
+
+Note that while these conversions might be convenient and intuitive, they are not (necessarily) efficient.
 
 
 ## Disclaimer
