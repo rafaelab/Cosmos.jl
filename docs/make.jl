@@ -1,6 +1,4 @@
 using Documenter
-
-push!(LOAD_PATH, joinpath(@__DIR__, "..", "src"))
 using Cosmos
 
 DocMeta.setdocmeta!(Cosmos, :DocTestSetup, :(using Cosmos))
