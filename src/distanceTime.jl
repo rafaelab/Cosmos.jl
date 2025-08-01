@@ -139,7 +139,7 @@ for timeType in ("Lookback", "Conformal")
 			cosmology::CosmologicalModel
 			value::Time{T}
 
-			function $(name){T}(cosmology::CosmologicalModel{C, T}, time::Time) where {C, T}
+			$(name){T}(cosmology::CosmologicalModel{C, T}, time::Time) where {C, T} = begin
 				return new{T}(cosmology, T(time |> u"yr"))
 			end
 		end
@@ -197,7 +197,8 @@ for distanceType1 ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter
 		if d1 ≠ d2
 			@eval begin
 				@doc """
-				Type conversion from `$($(d2))` to `$($(d1))`.
+				Constructor for `$(d1){D}` from `$(d2)`.
+				It essentially convert from `$($(d2))` to `$($(d1))`.
 				It ultimately enables conversion implicit conversions and the usage of the operator `|>`.
 				"""
 				$(d1){D}(distance::($(d2))) where {D} = $(d1)(convert(D, distance.cosmology), Redshift{D}(distance))
@@ -217,6 +218,8 @@ for timeType1 ∈ ("Lookback", "Conformal")
 		if t1 ≠ t2
 			@eval begin
 				@doc """
+					convert(TimeType, time)
+
 				Type conversion from `$($(t2))` to `$($(t1))`.
 				It ultimately enables conversion implicit conversions and the usage of the operator `|>`.
 				"""
@@ -237,6 +240,8 @@ for distanceType1 ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter
 		if d1 ≠ d2
 			@eval begin
 				@doc """
+					convert(DistanceType, distance)
+
 				Type conversion from `$($(d2))` to `$($(d1))`.
 				This function performs no type checks.
 				It assumes that the underlying `CosmologicalModel` is the same for both.
@@ -259,6 +264,8 @@ for timeType1 ∈ ("Lookback", "Conformal")
 		if t1 ≠ t2
 			@eval begin
 				@doc """
+					convert(TimeType, time)
+
 				Type conversion from `$($(t2))` to `$($(t1))`.
 				This function performs no type checks.
 				It assumes that the underlying `CosmologicalModel` is the same for both.
@@ -278,6 +285,8 @@ for measureType ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminos
 	measure = Symbol("$(measureType)")
 	@eval begin
 		@doc """
+			convert(Redshift, distance)
+
 		Type conversion from `$($(measure))` to `Redshift`.
 		These conversions assume distances/times with respect to present time (z=0).
 		"""
@@ -286,6 +295,8 @@ for measureType ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminos
 		
 
 		@doc """
+			convert(ScaleFactor, distance)
+
 		Type conversion from `$($(measure))` to `ScaleFactor`.
 		These conversions assume distances/times with respect to present time (z=0).
 		"""
@@ -294,6 +305,12 @@ for measureType ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminos
 
 
 		@doc """
+			convert(DistanceComoving, redshift, cosmology)
+			convert(DistanceAngularDiameter, redshift, cosmology)
+			convert(DistanceLightTravel, redshift, cosmology)
+			convert(DistanceComovingTransverse, redshift, cosmology)
+			convert(DistanceLuminosity, redshift, cosmology)
+
 		Type conversion from `Redshift` to `$($(measure))`.
 		These conversions assume distances/times with respect to present time (z=0).
 		"""
@@ -301,6 +318,12 @@ for measureType ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminos
 		Base.convert(::Type{$(measure)}, z::Redshift, cosmology::CosmologicalModel) = convert($(measure){eltype(cosmology)}, z, cosmology)
 
 		@doc """
+			convert(DistanceComoving, scaleFactor, cosmology)
+			convert(DistanceAngularDiameter, scaleFactor, cosmology)
+			convert(DistanceLightTravel, scaleFactor, cosmology)
+			convert(DistanceComovingTransverse, scaleFactor, cosmology)
+			convert(DistanceLuminosity, scaleFactor, cosmology)
+
 		Type conversion from `ScaleFactor` to `$($(measure))`.
 		These conversions assume distances/times with respect to present time (z=0).
 		"""
@@ -316,7 +339,10 @@ for measureType ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminos
 	measure = Symbol("$(measureType)")
 	@eval begin
 		@doc """
+			convert(DistanceType, distance)
+
 		Type conversions for `$($(measure))`.
+		This enables conversions between different distance measures (`DistanceLightTravel`, `DistanceComoving`, etc.) and the usage of the operator `|>`.
 		"""
 		Base.convert(::Type{$(measure){T}}, s::$(measure)) where {T} = $(measure){T}(convert(T, s.cosmology), T(s.value))
 		Base.convert(::Type{T}, s::$(measure)) where {T <: Real} = $(measure){T}(convert(T, s.cosmology), T(s.value))

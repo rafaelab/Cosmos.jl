@@ -6,7 +6,7 @@ Convenient object to handle redshifts.
 struct Redshift{T <: Real}
 	value::T
 
-	function Redshift{T}(z::Real) where {T}
+	Redshift{T}(z::Real) where {T} = begin
 		z > -1. || throw(DomainError("Redshift cannot be less than or equal to -1."))
 		return new{T}(z)
 	end
@@ -22,7 +22,7 @@ Convenient object to handle scale factors.
 struct ScaleFactor{T <: Real}
 	value::T
 	
-	function ScaleFactor{T}(a::Real) where {T}
+	ScaleFactor{T}(a::Real) where {T} = begin
 		a ≥ 0. || throw(DomainError("Scale factor cannot be negative or zero."))
 		return new{T}(a)
 	end
@@ -42,11 +42,9 @@ Get data type.
 Base.eltype(::Redshift{Z}) where {Z} = Z
 Base.eltype(::ScaleFactor{A}) where {A} = A
 
+
 # ----------------------------------------------------------------------------------------------- #
 #
-@doc """
-Conversions for redshift and scale factors.
-"""
 Base.convert(::Type{Redshift{Z1}}, z::Redshift{Z2}) where {Z1, Z2} = Redshift{Z1}(Z1(z.value))
 Base.convert(::Type{Redshift{Z}}, scaleFactor::ScaleFactor{A}) where {Z, A} = Redshift{Z}(1. / scaleFactor.value - 1.)
 Base.convert(::Type{Redshift}, scaleFactor::ScaleFactor{A}) where {A} = convert(Redshift{A}, scaleFactor)
