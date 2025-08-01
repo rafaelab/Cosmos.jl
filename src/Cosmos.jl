@@ -38,10 +38,11 @@ export
 
 using Interpolations
 using Printf
-using Reexport
-@reexport using PhysicalConstants.CODATA2018
-@reexport using Unitful
-@reexport using UnitfulAstro
+using StaticArrays
+using Cosmonstants
+using Unitful 
+using UnitfulAstro
+
 
 import Cosmology
 
