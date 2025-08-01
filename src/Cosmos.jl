@@ -38,10 +38,11 @@ export
 
 using Interpolations
 using Printf
+using Reexport
 using StaticArrays
-using Cosmonstants
-using Unitful 
-using UnitfulAstro
+@reexport using Cosmonstants
+@reexport using Unitful 
+@reexport using UnitfulAstro
 
 
 import Cosmology
