@@ -1,8 +1,7 @@
 using Test
 using Cosmos
-using Unitful
-using UnitfulAstro
 
+import Cosmology
 
 
 include("base.jl")
