@@ -17,14 +17,14 @@ UnitfulAstro = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
 Cosmonstants = {url = "https://github.com/rafaelab/Cosmonstants.jl"}
 
 [compat]
-Cosmology = "1.0.0-"
-Cosmonstants = "1.0.0-"
+Cosmology = "1.0.0"
+Cosmonstants = "1.0.0"
 Interpolations = "0.15.0"
-Printf = "1.11.0-"
+Printf = "1.11.0"
 Reexport = "1.2.2"
 StaticArrays = "1.9.14"
-Unitful = "1.24.0-"
-UnitfulAstro = "1.2.0-"
+Unitful = "1.24.0"
+UnitfulAstro = "1.2.0"
 
 
 [extras]
