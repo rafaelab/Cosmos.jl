@@ -3,11 +3,11 @@
 @doc """
 Abstract supertype for distance measurements.
 Sub-types include: 
-  `DistanceComoving`, 
-  `DistanceLightTravel`,
-  `DistanceAngularDiameter`,
-  `DistanceComovingTransverse`,
-  `DistanceLuminosity`.
+. `DistanceComoving`, 
+. `DistanceLightTravel`,
+. `DistanceAngularDiameter`,
+. `DistanceComovingTransverse`,
+. `DistanceLuminosity`.
 """
 abstract type AbstractDistanceMeasure end
 
@@ -16,8 +16,8 @@ abstract type AbstractDistanceMeasure end
 @doc """
 Abstract supertype for time measurements.
 Sub-types include: 
-  `TimeLookback`,
-  `TimeConformal`.
+. `TimeLookback`,
+. `TimeConformal`.
 """
 abstract type AbstractTimeMeasure end
 
@@ -25,7 +25,7 @@ abstract type AbstractTimeMeasure end
 # ----------------------------------------------------------------------------------------------- #
 # 
 # Meta-generation of distance types.
-for distanceType in ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
+for distanceType ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter", "ComovingTransverse")
 	label = Symbol(lowercase(distanceType[1]) * distanceType[2 : end])
 	name = Symbol("Distance$(distanceType)")
 	info = ""
@@ -183,7 +183,7 @@ end
 for measure ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeLookback", "TimeConformal")
 	name = Symbol("$(measure)")
 	@eval begin
-		Base.eltype(s::$(name){T}) where {T} = T
+		Base.@pure Base.eltype(s::$(name){T}) where {T} = T
 	end
 end
 

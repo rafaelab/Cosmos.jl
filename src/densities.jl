@@ -12,7 +12,7 @@ Computes the critical density of the universe at a given redshift:
 . `cosmology::CosmologicalModel`: the cosmological model of interest \\
 . `z::Real`: the redshift at which to compute the density \\
 """
-function computeCriticalDensity(cosmology::CosmologicalModel; z::Real = 0.)
+@inline computeCriticalDensity(cosmology::CosmologicalModel; z::Real = 0.) = begin
 	return upreferred(3. * hubbleParameter(cosmology, z) ^ 2 / 8π / G)
 end
 
@@ -82,7 +82,7 @@ end
 
 Computes the density of matter in the universe at a given redshift:
 ```math
-  \rho_\text{\Lambda} = \Omega_\Lambda \rho_\text{c}
+	\rho_\text{\Lambda} = \Omega_\Lambda \rho_\text{c}
 ```
 
 # Input 
@@ -101,7 +101,7 @@ end
 
 Computes the density of matter in the universe at a given redshift:
 ```math
-  \rho_\text{b} = \Omega_\text{b} \rho__\text{c}
+	\rho_\text{b} = \Omega_\text{b} \rho_\text{c}
 ```
 
 # Input 
