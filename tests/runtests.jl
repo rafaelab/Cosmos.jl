@@ -1,7 +1,8 @@
 using Test
+using Cosmos
 using Unitful
 using UnitfulAstro
-using Cosmos
+
 
 
 include("base.jl")

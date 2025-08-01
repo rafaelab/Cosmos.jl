@@ -1,10 +1,3 @@
-using Test
-using Unitful
-using UnitfulAstro
-
-using Cosmos
-
-
 @testset "Check initialisation and property storage" begin
 	cosmo1 = CosmologyPlanck()
 	cosmo2 = CosmologicalModel(0.69, 0.29, 0., 0.06)

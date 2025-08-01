@@ -1,11 +1,3 @@
-using Test
-using Cosmology
-using Unitful
-using UnitfulAstro
-
-using Cosmos
-
-
 @testset "Cosmology functions" begin
     # Define a sample cosmological model
     Tcmb = 2.7255

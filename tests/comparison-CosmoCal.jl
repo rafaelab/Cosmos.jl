@@ -1,10 +1,3 @@
-using Test
-using Unitful
-using UnitfulAstro
-
-using Cosmos
-
-
 # Comparison with Ned Wright's CosmoCalc:
 #   https://www.astro.ucla.edu/~wright/CosmoCalc.html
 # Set h = 0.69, Omega_m = 0.29, Omega_lambda = 0.71
