@@ -42,7 +42,7 @@ Base.eltype(cosmo::AbstractCosmology) = typeof(cosmo.h)
 @doc """
 Define global variable to hold information about the default cosmological model.
 """
-global _defaultCosmology = nothing
+const _defaultCosmologyRef = Ref{Any}(nothing)
 
 # ----------------------------------------------------------------------------------------------- #
 # 
@@ -51,11 +51,13 @@ Set the value of the global default cosmological model.
 This will enable faster function calls. 
 For instances, instead of `d = DistanceComovingTransverse(1., cosmology)`, the second argument will become the default value.
 """
-macro setDefaultCosmology(cosmology)
-	quote
-		global _defaultCosmology = $cosmology
-	end
-end
+setDefaultCosmology(cosmology) = (_defaultCosmologyRef[] = cosmology)
+getDefaultCosmology() = _defaultCosmologyRef[]
+# macro setDefaultCosmology(cosmology)
+# 	quote
+# 		global _defaultCosmology = $cosmology
+# 	end
+# end
 
 
 # ----------------------------------------------------------------------------------------------- #

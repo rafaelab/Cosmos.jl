@@ -100,7 +100,7 @@ function CosmologicalModel{T}(cosmo::C; args...) where {C <: AbstractCosmology, 
 end
 
 function CosmologicalModel(cosmo::C; args...) where {C <: AbstractCosmology}
-	return CosmologicalModel{C, eltype(cosmo.cosmology)}(cosmo; args...)
+	return CosmologicalModel{C, eltype(cosmo)}(cosmo; args...)
 end
 
 function CosmologicalModel(h::Real, Ωm::Real; args...)
