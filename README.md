@@ -1,5 +1,10 @@
 # Cosmos.jl
 
+[![Build Status](https://github.com/rafaelab/Cosmos.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/rafaelab/Cosmos.jl/actions)
+[![Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://rafaelab.github.io/Cosmos.jl/index.html)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+
 Useful tools for astrophysics and cosmology. 
 It wraps and extends [Cosmology.jl](https://github.com/JuliaAstro/Cosmology.jl/).
 
