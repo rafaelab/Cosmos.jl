@@ -63,57 +63,54 @@ mutable struct CosmologicalModel{C <: AbstractCosmology, T <: Real}
 	Ωb::T
 	Tcmb::T
 	Nν::T
-	wEOSΛ::Tuple{T, T}
+	wEOSΛ::SVector{2, T}
 	cosmology::C
 	toRedshift::Dict{Symbol, Function}
 	fromRedshift::Dict{Symbol, Function}
 	zArray::Vector{T}
 
-	function CosmologicalModel{C, T}(cosmo::C; Ωb::Real = -1., Tcmb::Real = 2.7255, Nν::Real = 3., z::Maybe{AbstractVector} = nothing) where {C <: AbstractCosmology, T <: Real}		
-		h = cosmo.h
-		Ωr = cosmo.Ω_r
-		Ωm = cosmo.Ω_m
-		ΩΛ = cosmo.Ω_Λ
-		Ωk = (C isa Union{Cosmology.AbstractClosedCosmology, Cosmology.AbstractOpenCosmology}) ? cosmo.Ω_k : zero(T)
-		wEOSΛ = (C isa Union{Cosmology.FlatWCDM, Cosmology.OpenWCDM, Cosmology.ClosedWCDM}) ? (cosmo.w0, cosmo.wa) : (- one(T), zero(T))
+	function CosmologicalModel{C, T}(cosmo::C; Ωb::Real = -1., Tcmb::Real = 2.7255, Nν::Real = 3., z::Maybe{AbstractVector} = nothing) where {C <: AbstractCosmology, T <: Real}
+		h = T(cosmo.h)
+		Ωr = T(cosmo.Ω_r)
+		Ωm = T(cosmo.Ω_m)
+		ΩΛ = T(cosmo.Ω_Λ)
+		Ωb = T(Ωb)
+		Ωk = (C isa Union{Cosmology.AbstractClosedCosmology, Cosmology.AbstractOpenCosmology}) ? T(cosmo.Ω_k) : zero(T)
+		wEOSΛ = (C isa Union{Cosmology.FlatWCDM, Cosmology.OpenWCDM, Cosmology.ClosedWCDM}) ? SVector{2, T}(T(cosmo.w0), T(cosmo.wa)) : SVector{2, T}(-one(T), zero(T))
+		Tcmb = T(Tcmb)
+		Nν = T(Nν)
 
 		if isnothing(z)
-			z = T[]
-			append!(z, -10. .^ collect(range(-3., 0.; length = 91)))
-			append!(z, collect(range(-0.001, 0.001; length = 31)))
-			append!(z, collect(range(0.001, 10.; length = 81)))
-			append!(z, collect(range(1., 2.; length = 21)))
-			append!(z, 10 .^ collect(range(2., 4.; length = 41)))
-			unique!(z)
+			z = prepareRedshiftSamples(T)
 		end
 
 		funcTo = conversionsToRedshift(cosmo, z)
 		funcFrom = conversionsFromRedshift(cosmo)
 
-		return new{C, T}(T(h), T(ΩΛ), T(Ωm), T(Ωr), T(Ωk), T(Ωb), T(Tcmb), T(Nν), T.(wEOSΛ), convert(T, cosmo), funcTo, funcFrom, z)
+		return new{C, T}(h, ΩΛ, Ωm, Ωr, Ωk, Ωb, Tcmb, Nν, wEOSΛ, convert(T, cosmo), funcTo, funcFrom, z)
 	end
 end
 
-function CosmologicalModel{T}(cosmo::C; args...) where {C <: AbstractCosmology, T <: Real}	
+CosmologicalModel{T}(cosmo::AbstractCosmology; args...) where {T <: Real} = begin
 	c = convert(T, cosmo)
 	return CosmologicalModel{typeof(c), T}(c; args...)
 end
 
-function CosmologicalModel(cosmo::C; args...) where {C <: AbstractCosmology}
-	return CosmologicalModel{C, eltype(cosmo)}(cosmo; args...)
+CosmologicalModel(cosmo::AbstractCosmology; args...) = begin
+	return CosmologicalModel{typeof(c), eltype(cosmo)}(cosmo; args...)
 end
 
-function CosmologicalModel(h::Real, Ωm::Real; args...)
+CosmologicalModel(h::Real, Ωm::Real; args...) = begin
 	cosmo = Cosmology.cosmology(h = h, OmegaM = Ωm)
 	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
 
-function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real; args...)
+CosmologicalModel(h::Real, Ωm::Real, Ωk::Real; args...) = begin
 	cosmo = Cosmology.cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk)
 	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
 
-function CosmologicalModel(h::Real, Ωm::Real, Ωk::Real, Ωr::Real; args...) 
+CosmologicalModel(h::Real, Ωm::Real, Ωk::Real, Ωr::Real; args...) = begin
 	cosmo = Cosmology.cosmology(h = h, OmegaM = Ωm, OmegaK = Ωk, OmegaR = Ωr)
 	return CosmologicalModel{typeof(cosmo), typeof(h)}(cosmo; args...)
 end
@@ -152,27 +149,21 @@ end
 
 function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 	T = eltype(cosmo)
-
-	# prepare redshifts
-	if isnothing(z)
-		z = T[]
-		append!(z, -10. .^ collect(range(-3., 0.; length = 91)))
-		append!(z, collect(range(-0.001, 0.001; length = 31)))
-		append!(z, collect(range(0.001, 10.; length = 81)))
-		append!(z, collect(range(1., 2.; length = 21)))
-		append!(z, 10 .^ collect(range(2., 4.; length = 41)))
-		unique!(z)
-	else
-		z = convert(Vector{T}, z)
-	end
+	z = convert(Vector{T}, z)
 	z = z[z .> -1.0]
 	sort!(z)
 
-	# distance arrays
-	dC, dL, dP, dT, dA = T[], T[], T[], T[], T[]
-	tC, tL = T[], T[]
+	# pre-allocate arrays
+	dC = Vector{T}(undef, length(z))
+	dL = Vector{T}(undef, length(z))
+	dP = Vector{T}(undef, length(z))
+	dT = Vector{T}(undef, length(z))
+	dA = Vector{T}(undef, length(z))
+	tC = Vector{T}(undef, length(z))
+	tL = Vector{T}(undef, length(z))
 
-	@simd for i ∈ eachindex(z)
+
+	Threads.@threads for i ∈ eachindex(z)
 		dC0 = comoving_radial_dist(cosmo, z[i])
 		dL0 = luminosity_dist(cosmo, z[i]) 
 		dT0 = comoving_transverse_dist(cosmo, z[i])
@@ -180,13 +171,13 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 		tL0 = lookback_time(cosmo, z[i])
 		dP0 = tL0 * SpeedOfLightInVacuum
 		tC0 = dC0 / SpeedOfLightInVacuum
-		@inbounds push!(dC, ustrip.(dC0 |> u"m"))
-		@inbounds push!(dL, ustrip.(dL0 |> u"m"))
-		@inbounds push!(dP, ustrip.(dP0 |> u"m"))
-		@inbounds push!(dT, ustrip.(dT0 |> u"m"))
-		@inbounds push!(dA, ustrip.(dA0 |> u"m"))
-		@inbounds push!(tL, ustrip.(tL0 |> u"s"))
-		@inbounds push!(tC, ustrip.(tC0 |> u"s"))
+		@inbounds dC[i] = ustrip.(dC0 |> u"m")
+		@inbounds dL[i] = ustrip.(dL0 |> u"m")
+		@inbounds dP[i] = ustrip.(dP0 |> u"m")
+		@inbounds dT[i] = ustrip.(dT0 |> u"m")
+		@inbounds dA[i] = ustrip.(dA0 |> u"m")
+		@inbounds tL[i] = ustrip.(tL0 |> u"s")
+		@inbounds tC[i] = ustrip.(tC0 |> u"s")
 	end
 
 	# get indices that sort arrays, as required by Interpolations.jl
@@ -238,11 +229,11 @@ end
 @doc """
 Latest Planck's cosmology.
 This is based on:
-  "Planck 2018 results. VI. Cosmological parameters"
-  Planck Collaboration
-  Astronomy and Astrophysics 641 (2020) A6.
-  https://arxiv.org/abs/1807.06209
-  https://doi.org/10.1051/0004-6361/201833910
+	"Planck 2018 results. VI. Cosmological parameters"
+	Planck Collaboration
+	Astronomy and Astrophysics 641 (2020) A6.
+	https://arxiv.org/abs/1807.06209
+	https://doi.org/10.1051/0004-6361/201833910
 
 # Input
 . `z::Maybe{AbstractVector}`: vectors at which the redshifts will be sampled (for interpolating distance measures) \\
@@ -254,7 +245,7 @@ function CosmologyPlanck(; T::Type = Float64)
 	return CosmologicalModel{typeof(cosmo), T}(cosmo; Ωb = T(0.023), Nν = T(3.04), Tcmb = T(2.7255))
 end
 
-@setDefaultCosmology(CosmologyPlanck())
+setDefaultCosmology(CosmologyPlanck())
 
 # ----------------------------------------------------------------------------------------------- #
 # 
