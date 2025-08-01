@@ -11,6 +11,9 @@ makedocs(;
 	workdir = joinpath(@__DIR__, ".."),
 	pages = [
 		"Home" => "index.md",
+		"Installation" => "installation.md",
+		"Examples" => "examples.md",
+		"API Reference" => "api.md",
 		],
 	doctest = true,
 )
