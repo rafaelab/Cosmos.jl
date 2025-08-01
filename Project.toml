@@ -14,12 +14,13 @@ UnitfulAstro = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
 
 [compat]
 Cosmology = "1.0.3"
-Cosmonstants = "1.0.0"
+Cosmonstants = "1.2.0"
 Interpolations = "0.15.1"
 Printf = "1.11.0"
 StaticArrays = "1.9.14"
 Unitful = "1.24.0"
 UnitfulAstro = "1.2.2"
+
 
 [sources]
 Cosmonstants = {url = "https://github.com/rafaelab/Cosmonstants.jl"}
