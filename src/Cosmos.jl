@@ -23,17 +23,17 @@ export
 	hubbleDistance,
 	hubbleTime,
 	hubbleParameter,
-	dimensionlessHubbleParameter
-	# comovingVolume,
-	# comovingVolumeElement,
-	# comovingElement,
-	# calculateDensityPhotons,
+	dimensionlessHubbleParameter,
+	comovingVolume,
+	comovingVolumeElement,
+	comovingElement,
+	calculateDensityPhotons,
 	# calculateDensityNeutrinos,
-	# computeCriticalDensity,
-	# computeMatterDensity,
-	# computeDarkEnergyDensity,
-	# computeCurvatureDensity,
-	# computeRadiationDensity
+	computeCriticalDensity,
+	computeMatterDensity,
+	computeDarkEnergyDensity,
+	computeCurvatureDensity,
+	computeRadiationDensity
 
 
 using Interpolations
@@ -44,24 +44,17 @@ using StaticArrays
 @reexport using Unitful 
 @reexport using UnitfulAstro
 
-
 import Cosmology
 
 import Cosmology:
-	H,
-	E,
 	AbstractCosmology,
 	OpenLCDM, 
 	ClosedLCDM, 
 	FlatLCDM,
 	OpenWCDM, 
 	ClosedWCDM, 
-	FlatWCDM,
-	angular_diameter_dist, 
-	comoving_radial_dist, 
-	comoving_transverse_dist, 
-	luminosity_dist, 
-	lookback_time
+	FlatWCDM
+
 import Unitful:
 	Length,
 	Temperature,

@@ -97,7 +97,7 @@ CosmologicalModel{T}(cosmo::AbstractCosmology; args...) where {T <: Real} = begi
 end
 
 CosmologicalModel(cosmo::AbstractCosmology; args...) = begin
-	return CosmologicalModel{typeof(c), eltype(cosmo)}(cosmo; args...)
+	return CosmologicalModel{typeof(cosmo), eltype(cosmo)}(cosmo; args...)
 end
 
 CosmologicalModel(h::Real, Ωm::Real; args...) = begin
@@ -127,11 +127,11 @@ Helper function (unexported) to iniatilise conversions of distance or time to/fr
 function conversionsFromRedshift(cosmo::AbstractCosmology)
 	T = eltype(cosmo)
 
-	z2dl(z2::Real, z1::Real) = T(luminosity_dist(cosmo, z2) - luminosity_dist(cosmo, z1))
-	z2dc(z2::Real, z1::Real) = T(comoving_radial_dist(cosmo, z2, z1))
-	z2dt(z2::Real, z1::Real) = T(transverse_comoving_dist(cosmo, z2, z1))
-	z2da(z2::Real, z1::Real) = T(angular_diameter_dist(cosmo, z1, z2))
-	z2tl(z2::Real, z1::Real) = T(lookback_time(cosmo, z2) - lookback_time(cosmo, z1) )
+	z2dl(z2::Real, z1::Real) = T(Cosmology.luminosity_dist(cosmo, z2) - Cosmology.luminosity_dist(cosmo, z1))
+	z2dc(z2::Real, z1::Real) = T(Cosmology.comoving_radial_dist(cosmo, z2, z1))
+	z2dt(z2::Real, z1::Real) = T(Cosmology.transverse_comoving_dist(cosmo, z2, z1))
+	z2da(z2::Real, z1::Real) = T(Cosmology.angular_diameter_dist(cosmo, z1, z2))
+	z2tl(z2::Real, z1::Real) = T(Cosmology.lookback_time(cosmo, z2) - Cosmology.lookback_time(cosmo, z1))
 	z2tc(z2::Real, z1::Real) = T(z2dc(z2, z1) / SpeedOfLightInVacuum |> u"yr")
 	z2dp(z2::Real, z1::Real) = T(z2tl(z2, z1) * SpeedOfLightInVacuum |> u"Mpc")
 
@@ -164,11 +164,11 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 
 
 	Threads.@threads for i ∈ eachindex(z)
-		dC0 = comoving_radial_dist(cosmo, z[i])
-		dL0 = luminosity_dist(cosmo, z[i]) 
-		dT0 = comoving_transverse_dist(cosmo, z[i])
-		dA0 = angular_diameter_dist(cosmo, z[i])
-		tL0 = lookback_time(cosmo, z[i])
+		dC0 = Cosmology.comoving_radial_dist(cosmo, z[i])
+		dL0 = Cosmology.luminosity_dist(cosmo, z[i]) 
+		dT0 = Cosmology.comoving_transverse_dist(cosmo, z[i])
+		dA0 = Cosmology.angular_diameter_dist(cosmo, z[i])
+		tL0 = Cosmology.lookback_time(cosmo, z[i])
 		dP0 = tL0 * SpeedOfLightInVacuum
 		tC0 = dC0 / SpeedOfLightInVacuum
 		@inbounds dC[i] = ustrip.(dC0 |> u"m")

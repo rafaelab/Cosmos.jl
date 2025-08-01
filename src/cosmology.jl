@@ -11,7 +11,7 @@ This follows the definition from Peebles 1993 (p. ~310-322), adopted by Hogg, ar
 . `cosmo` [`CosmologicalModel`]: the cosmological model \\
 . `z` [`Real`]: the redshift \\
 """
-dimensionlessHubbleParameter(cosmo::CosmologicalModel, z::Real) = E(cosmo._cosmology, z)
+dimensionlessHubbleParameter(cosmo::CosmologicalModel, z::Real) = Cosmology.E(cosmo.cosmology, z)
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -24,7 +24,7 @@ Compute the Hubble parameter H(z).
 . `cosmo` [`CosmologicalModel`]: the cosmological model \\
 . `z` [`Real`]: the redshift \\
 """
-hubbleParameter(cosmo::CosmologicalModel, z::Real) = H(cosmo._cosmology, z)
+hubbleParameter(cosmo::CosmologicalModel, z::Real) = Cosmology.H(cosmo.cosmology, z)
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -68,8 +68,8 @@ Computes the Hubble distance for a given cosmology and possibly at a given redsh
 . `cosmo` [`CosmologicalModel`]: the cosmological model \\
 . `z` [`Real`]: the redshift \\
 """
-hubbleDistance(cosmo::CosmologicalModel) = hubble_dist0(cosmo._cosmology)
-hubbleDistance(cosmo::CosmologicalModel, z::Real) = hubble_dist(cosmo._cosmology, z)
+hubbleDistance(cosmo::CosmologicalModel) = Cosmology.hubble_dist0(cosmo.cosmology)
+hubbleDistance(cosmo::CosmologicalModel, z::Real) = Cosmology.hubble_dist(cosmo.cosmology, z)
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -85,8 +85,8 @@ Computes the Hubble distance for a given cosmology and possibly at a given redsh
 . `cosmo` [`CosmologicalModel`]: the cosmological model \\
 . `z` [`Real`]: the redshift \\
 """
-hubbleTime(cosmo::CosmologicalModel) = hubble_time0(cosmo._cosmology)
-hubbleTime(cosmo::CosmologicalModel, z::Real) = hubble_time(cosmo._cosmology, z)
+hubbleTime(cosmo::CosmologicalModel) = Cosmology.hubble_time0(cosmo.cosmology)
+hubbleTime(cosmo::CosmologicalModel, z::Real) = Cosmology.hubble_time(cosmo.cosmology, z)
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -101,10 +101,10 @@ Computes the Hubble distance for a given cosmology and possibly at a given redsh
 . `cosmo` [`CosmologicalModel`]: the cosmological model \\
 . `z` [`Real`]: the redshift \\
 """
-ageOfUniverse(cosmo::CosmologicalModel) = age(cosmo._cosmology)
-ageOfUniverse(cosmo::CosmologicalModel, z::Real) = age(cosmo._cosmology, z)
+ageOfUniverse(cosmo::CosmologicalModel) = Cosmology.age(cosmo.cosmology, zero(eltype(cosmo)))
+ageOfUniverse(cosmo::CosmologicalModel, z::Real) = Cosmology.age(cosmo.cosmology, z)
 ageOfUniverse(cosmo::CosmologicalModel, z::Redshift) = ageOfUniverse(cosmo, z.value)
-ageOfUniverse(cosmo::CosmologicalModel, a::ScaleFactor) = age(cosmo._cosmology, convert(Redshift, a))
+ageOfUniverse(cosmo::CosmologicalModel, a::ScaleFactor) = ageOfUniverse(cosmo, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -118,7 +118,7 @@ Calculates the comoving volume at a given redshift.
 . `cosmo` [`CosmologicalModel`]: the cosmological model \\
 . `z` [`Real`]: the redshift \\
 """
-comovingVolume(cosmo::CosmologicalModel, z::Real) = comoving_volume(cosmo._cosmology, z)
+comovingVolume(cosmo::CosmologicalModel, z::Real) = Cosmology.comoving_volume(cosmo.cosmology, z)
 comovingVolume(cosmo::CosmologicalModel, z::Redshift) = comovingVolume(cosmo, z.value)
 comovingVolume(cosmo::CosmologicalModel, a::ScaleFactor) = comovingVolume(cosmo, convert(Redshift, a))
 
@@ -134,7 +134,7 @@ Calculates the comoving volume element at a given redshift.
 . `cosmo` [`CosmologicalModel`]: the cosmological model \\
 . `z` [`Real`]: the redshift \\
 """
-comovingVolumeElement(cosmo::CosmologicalModel, z::Real) = comoving_volume_element(cosmo._cosmology, z)
+comovingVolumeElement(cosmo::CosmologicalModel, z::Real) = Cosmology.comoving_volume_element(cosmo.cosmology, z)
 comovingVolumeElement(cosmo::CosmologicalModel, z::Redshift) = comovingVolumeElement(cosmo, z.value)
 comovingVolumeElement(cosmo::CosmologicalModel, a::ScaleFactor) = comovingVolumeElement(cosmo, convert(Redshift, a))
 
@@ -156,38 +156,38 @@ NOTE: check nomenclature.
 . `z` [`Redshift`]: the redshift (of type `Redshift`) \\
 . `a` [`ScaleFactor`]: the scale factor type \\
 """
-comovingElement(cosmo::CosmologicalModel, z::Float64) = hubbleDistance(cosmo, z)  / E(cosmo._cosmology, z) / (1 + z)
+comovingElement(cosmo::CosmologicalModel, z::Float64) = hubbleDistance(cosmo, z)  / Cosmology.E(cosmo.cosmology, z) / (1 + z)
 comovingElement(cosmo::CosmologicalModel, z::Redshift) = comovingElement(cosmo, z.value)
 comovingElement(cosmo::CosmologicalModel, a::ScaleFactor) = comovingElement(cosmo, convert(Redshift, a))
 
 
-# ----------------------------------------------------------------------------------------------- #
-# 
-@doc """
-	calculateDensityNeutrinos(cosmology, Nν, Tcmb)
+# # ----------------------------------------------------------------------------------------------- #
+# # 
+# @doc """
+# 	calculateDensityNeutrinos(cosmology, Nν, Tcmb)
 
-Compute the density of relativistic components.
+# Compute the density of relativistic components.
 
-# Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `Nν`: effective number of neutrino species (3.04 according to Planck) \\
-. `Tcmb`: current CMB temperature \\
-"""
-calculateDensityNeutrinos(cosmo::CosmologicalModel, Nν::Real, Tcmb::Real) = eltype(cosmo)((7. / 8.) * (4. / 11.) ^ (4 / 3) * Nν * calculateDensityPhotons(cosmo, Tcmb))
+# # Input
+# . `cosmo` [`CosmologicalModel`]: the cosmological model \\
+# . `Nν`: effective number of neutrino species (3.04 according to Planck) \\
+# . `Tcmb`: current CMB temperature \\
+# """
+# calculateDensityNeutrinos(cosmo::CosmologicalModel, Nν::Real, Tcmb::Real) = eltype(cosmo)((7. / 8.) * (4. / 11.) ^ (4 / 3) * Nν * calculateDensityPhotons(cosmo, Tcmb))
 	
 
-# ----------------------------------------------------------------------------------------------- #
-# 
-@doc """
-	calculateDensityPhotons(cosmology, Nν, Tcmb)
+# # ----------------------------------------------------------------------------------------------- #
+# # 
+# @doc """
+# 	calculateDensityPhotons(cosmology, Nν, Tcmb)
 
-Compute the density of photons.
+# Compute the density of photons.
 
-# Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `Tcmb` [`Real` or `Temperature`]: current CMB temperature \\
-"""
-calculateDensityPhotons(cosmo::CosmologicalModel, Tcmb::Real) = eltype(cosmo)(4.4813e-7 * (Tcmb ^ 2 / cosmo.h) ^ 2)
+# # Input
+# . `cosmo` [`CosmologicalModel`]: the cosmological model \\
+# . `Tcmb` [`Real` or `Temperature`]: current CMB temperature \\
+# """
+# calculateDensityPhotons(cosmo::CosmologicalModel, Tcmb::Real) = eltype(cosmo)(4.4813e-7 * (Tcmb ^ 2 / cosmo.h) ^ 2)
 
 
 # ----------------------------------------------------------------------------------------------- #

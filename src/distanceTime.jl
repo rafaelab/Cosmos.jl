@@ -55,9 +55,9 @@ for distanceType ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter"
 		Convenient object to help with distance measures conversions.
 		$($(info))
 		For more information see:
-			"Distance measures in cosmology".
-			D. Hogg
-			arXiv:astro-ph/9905116
+			"Distance measures in cosmology" \n
+			D. Hogg \n
+			arXiv:astro-ph/9905116 \n
 
 		# Input
 		. `cosmology::CosmologicalModel`: the cosmological model to be used as reference \\
@@ -84,15 +84,15 @@ for distanceType ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter"
 
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor) where {C, T} = $(name)(cosmology, ScaleFactor(a), ScaleFactor(T(1.)))
 
-		$(name)(distance::Union{Length, Real}) = $(name)(_defaultCosmology, distance)
+		$(name)(distance::Union{Length, Real}) = $(name)(defaultCosmology, distance)
 
-		$(name)(z::Redshift, z0::Redshift) = $(name)(_defaultCosmology, z, z0)
+		$(name)(z::Redshift, z0::Redshift) = $(name)(defaultCosmology, z, z0)
 
-		$(name)(z::Redshift) = $(name)(_defaultCosmology, z)
+		$(name)(z::Redshift) = $(name)(defaultCosmology, z)
 
-		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(_defaultCosmology, a, a0)
+		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(defaultCosmology, a, a0)
 
-		$(name)(a::ScaleFactor) = $(name)(_defaultCosmology, a)
+		$(name)(a::ScaleFactor) = $(name)(defaultCosmology, a)
 
 		Redshift{Z}(distance::$(name)) where {Z} = Redshift{Z}(distance.cosmology.toRedshift[$(QuoteNode(label))](distance.value))
 
@@ -156,15 +156,15 @@ for timeType in ("Lookback", "Conformal")
 
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor) where {C, T} = $(name)(cosmology, ScaleFactor(a), ScaleFactor(T(1.)))
 
-		$(name)(time::Union{Length, Real}) = $(name)(_defaultCosmology, time)
+		$(name)(time::Union{Length, Real}) = $(name)(defaultCosmology, time)
 
-		$(name)(z::Redshift, z0::Redshift) = $(name)(_defaultCosmology, z, z0)
+		$(name)(z::Redshift, z0::Redshift) = $(name)(defaultCosmology, z, z0)
 
-		$(name)(z::Redshift) = $(name)(_defaultCosmology, z)
+		$(name)(z::Redshift) = $(name)(defaultCosmology, z)
 
-		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(_defaultCosmology, a, a0)
+		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(defaultCosmology, a, a0)
 
-		$(name)(a::ScaleFactor) = $(name)(_defaultCosmology, a)
+		$(name)(a::ScaleFactor) = $(name)(defaultCosmology, a)
 
 		Redshift{Z}(time::$(name)) where {Z} = Redshift{Z}(time.cosmology.toRedshift[$(QuoteNode(label))](time.value))
 
@@ -183,7 +183,7 @@ end
 for measure ∈ ("DistanceLightTravel", "DistanceComoving", "DistanceLuminosity", "DistanceAngularDiameter", "DistanceComovingTransverse", "TimeLookback", "TimeConformal")
 	name = Symbol("$(measure)")
 	@eval begin
-		Base.@pure Base.eltype(s::$(name){T}) where {T} = T
+		Base.@pure Base.eltype(::$(name){T}) where {T} = T
 	end
 end
 
@@ -197,7 +197,7 @@ for distanceType1 ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter
 		if d1 ≠ d2
 			@eval begin
 				@doc """
-				Constructor for `$(d1){D}` from `$(d2)`.
+				Constructor for `$($(d1)){D}` from `$($(d2))`.
 				It essentially convert from `$($(d2))` to `$($(d1))`.
 				It ultimately enables conversion implicit conversions and the usage of the operator `|>`.
 				"""
