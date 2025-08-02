@@ -12,7 +12,7 @@
 	model = CosmologicalModel(cosmo; Nν = Nν, Tcmb = Tcmb)
 
 	@testset "Hubble Parameter Functions" begin
-		@test dimensionlessHubbleParameter(model, 0.0) ≈ 1.0
+		@test scalingFunctionHubbleParameter(model, 0.0) ≈ 1.0
 		@test hubbleParameter(model, 0.0) ≈ hubbleConstant(model)
 		@test hubbleDistance(model) > 0.0 * u"Mpc"
 		@test hubbleTime(model) > 0.0 * u"Gyr"

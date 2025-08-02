@@ -23,7 +23,7 @@ export
 	hubbleDistance,
 	hubbleTime,
 	hubbleParameter,
-	dimensionlessHubbleParameter,
+	scalingFunctionHubbleParameter,
 	comovingVolume,
 	comovingVolumeElement,
 	comovingElement,

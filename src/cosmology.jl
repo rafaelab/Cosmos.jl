@@ -1,9 +1,9 @@
 # ----------------------------------------------------------------------------------------------- #
 # 
 @doc """ 
-	dimensionlessHubbleParameter(cosmology, z)
+	scalingFunctionHubbleParameter(cosmology, z)
 
-Compute the dimensionless Hubble parameter (often dubbed `E`):
+Compute the scaling function for the Hubble parameter (often dubbed `E`):
 ``E(z) = \\frac{H(z)}{H(0)} \\sqrt{\\Omega_r (1 + z)^4 + \\Omega_m (1 + z)^3 + \\Omega_k (1 + z)^2 + \\Omega_\\Lambda}``
 This follows the definition from Peebles 1993 (p. ~310-322), adopted by Hogg, arXiv:astro-ph/9905116.
 
@@ -11,7 +11,9 @@ This follows the definition from Peebles 1993 (p. ~310-322), adopted by Hogg, ar
 . `cosmo` [`CosmologicalModel`]: the cosmological model \\
 . `z` [`Real`]: the redshift \\
 """
-dimensionlessHubbleParameter(cosmo::CosmologicalModel, z::Real) = Cosmology.E(cosmo.cosmology, z)
+scalingFunctionHubbleParameter(cosmo::CosmologicalModel, z::Real) = Cosmology.E(cosmo.cosmology, z)
+scalingFunctionHubbleParameter(cosmo::CosmologicalModel, z::Redshift) = scalingFunctionHubbleParameter(cosmo, z.value)
+scalingFunctionHubbleParameter(cosmo::CosmologicalModel, a::ScaleFactor) = scalingFunctionHubbleParameter(cosmo, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -25,6 +27,8 @@ Compute the Hubble parameter H(z).
 . `z` [`Real`]: the redshift \\
 """
 hubbleParameter(cosmo::CosmologicalModel, z::Real) = Cosmology.H(cosmo.cosmology, z)
+hubbleParameter(cosmo::CosmologicalModel, z::Redshift) = hubbleParameter(cosmo, z.value)
+hubbleParameter(cosmo::CosmologicalModel, a::ScaleFactor) = hubbleParameter(cosmo, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -53,7 +57,9 @@ This should be the same for all cosmologies, by definition, but passing this arg
 . `z` [`Real`]: the redshift \\
 """
 scaleFactor(cosmo::CosmologicalModel, z::Real) = eltype(cosmo)(1 / (1 + z))
+scaleFactor(cosmo::CosmologicalModel, z::Redshift) = ScaleFactor(z)
 scaleFactor(z::Real) = promote_type(Float64, typeof(z))(1. / (1. + z))
+scaleFactor(z::Redshift) = ScaleFactor(z)
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -70,6 +76,8 @@ Computes the Hubble distance for a given cosmology and possibly at a given redsh
 """
 hubbleDistance(cosmo::CosmologicalModel) = Cosmology.hubble_dist0(cosmo.cosmology)
 hubbleDistance(cosmo::CosmologicalModel, z::Real) = Cosmology.hubble_dist(cosmo.cosmology, z)
+hubbleDistance(cosmo::CosmologicalModel, z::Redshift) = hubbleDistance(cosmo, z.value)
+hubbleDistance(cosmo::CosmologicalModel, a::ScaleFactor) = hubbleDistance(cosmo, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -87,6 +95,8 @@ Computes the Hubble distance for a given cosmology and possibly at a given redsh
 """
 hubbleTime(cosmo::CosmologicalModel) = Cosmology.hubble_time0(cosmo.cosmology)
 hubbleTime(cosmo::CosmologicalModel, z::Real) = Cosmology.hubble_time(cosmo.cosmology, z)
+hubbleTime(cosmo::CosmologicalModel, z::Redshift) = hubbleTime(cosmo, z.value)
+hubbleTime(cosmo::CosmologicalModel, a::ScaleFactor) = hubbleTime(cosmo, convert(Redshift, a))
 
 
 # ----------------------------------------------------------------------------------------------- #
