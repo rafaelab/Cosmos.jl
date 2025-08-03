@@ -14,7 +14,7 @@ for cosmologyType ∈ ("FlatLCDM", "OpenLCDM", "ClosedLCDM", "FlatWCDM", "OpenWC
 		@doc """
 		Useful extensions of `Cosmology.jl`` to enable type conversion related to `$($(Symbol("$(cosmologyType)")))`.
 		"""
-		function Base.convert(::Type{T}, cosmo::$(Symbol("$(cosmologyType)")){U}) where {T <: Real, U} 
+		Base.convert(::Type{T}, cosmo::$(Symbol("$(cosmologyType)")){U}) where {T <: Real, U} = begin
 			fields = fieldnames(typeof(cosmo))
 			values = Tuple([convert(T, getfield(cosmo, field)) for field in fields])
 			return $(Symbol("$(cosmologyType)")){T}(values...)
@@ -25,7 +25,9 @@ for cosmologyType ∈ ("FlatLCDM", "OpenLCDM", "ClosedLCDM", "FlatWCDM", "OpenWC
 		@doc """
 		Useful extensions of Cosmology.jl implementing promotion rules.
 		"""
-		Base.promote_rule(::Type{$(Symbol("$(cosmologyType)")){T}}, ::Type{$(Symbol("$(cosmologyType)")){U}}) where {T, U} = $(Symbol("$(cosmologyType)")){promote_type(T, U)}
+		Base.promote_rule(::Type{$(Symbol("$(cosmologyType)")){T}}, ::Type{$(Symbol("$(cosmologyType)")){U}}) where {T, U} = begin
+			return $(Symbol("$(cosmologyType)")){promote_type(T, U)}
+		end
 	end
 end
 
@@ -53,11 +55,6 @@ For instances, instead of `d = DistanceComovingTransverse(1., cosmology)`, the s
 """
 setDefaultCosmology(cosmology) = (defaultCosmologyRef[] = cosmology)
 getDefaultCosmology() = defaultCosmologyRef[]
-# macro setDefaultCosmology(cosmology)
-# 	quote
-# 		global _defaultCosmology = $cosmology
-# 	end
-# end
 
 
 # ----------------------------------------------------------------------------------------------- #
