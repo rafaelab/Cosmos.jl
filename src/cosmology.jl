@@ -157,6 +157,9 @@ comovingVolumeElement(cosmo::CosmologicalModel, a::ScaleFactor) = comovingVolume
 
 Calculates the comoving line element at a given redshift.
 This is Hogg's eq. 28 adjusted.
+```math
+\frac{d \ell}{dz} = \frac{c}{H(z)} \frac{1}{E(z)}
+```
 
 NOTE: check nomenclature.
 
