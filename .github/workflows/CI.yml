@@ -10,24 +10,57 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Julia
-        uses: julia-actions/setup-julia@v1
+        uses: julia-actions/setup-julia@v2
         with:
           version: '1.11'
 
-      - name: Use Julia cache
-        run: |
-          mkdir -p ~/.julia
-          cp -r ./.julia/* ~/.julia || true
-
+      - name: Cache Julia dependencies and precompilation
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.julia/artifacts
+            ~/.julia/compiled
+            ~/.julia/packages
+          key: julia-deps-${{ runner.os }}-${{ hashFiles('**/Manifest.toml') }}
+          restore-keys: |
+            julia-deps-${{ runner.os }}-
+            
       - name: Install dependencies
         run: julia --project -e 'using Pkg; Pkg.instantiate()'
 
       - name: Run tests
         run: julia --project -e 'using Pkg; Pkg.test()'
+
+  docs:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.11'
+
+      - name: Develop package  in docs environment and install dependencies
+        run: |
+          julia --project=docs -e '
+            using Pkg
+            Pkg.develop(path=".")
+            Pkg.instantiate()
+          '
+      - name: Build documentation
+        run: julia --project=docs docs/make.jl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
