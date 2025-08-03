@@ -45,9 +45,7 @@ Display information of `Redshift` types.
 . `io` [`IO`]: `IO`-type objects with standard output \\
 . `z` [`Redshift`]: the redshift \\
 """
-function Base.show(io::IO, z::Redshift)
-	print(io, "z = $(z.value)")
-end
+Base.show(io::IO, z::Redshift) = print(io, "z = $(z.value)")
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -63,9 +61,7 @@ Display information about `ScaleFactor` types.
 . `io` [`IO`]: `IO`-type objects with standard output \\
 . `a` [`ScaleFactor`]: the scale factor \\
 """
-function Base.show(io::IO, a::ScaleFactor)
-	print(io, "a = $(a.value)")
-end
+Base.show(io::IO, a::ScaleFactor) = print(io, "a = $(a.value)")
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -82,9 +78,7 @@ Note that distances are cosmology-dependent, but this information is not display
 . `io` [`IO`]: `IO`-type objects with standard output \\
 . `d` [`AbstractDistanceMeasure`]: a distance object \\
 """
-function Base.show(io::IO, d::AbstractDistanceMeasure)
-	print(io, "d = $(d.value)")
-end
+Base.show(io::IO, d::AbstractDistanceMeasure) = print(io, "d = $(d.value)")
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -101,9 +95,7 @@ Note that times are cosmology-dependent, but this information is not displayed.
 . `io` [`IO`]: `IO`-type objects with standard output \\
 . `t` [`AbstractTimeMeasure`]: the time measure \\
 """
-function Base.show(io::IO, t::AbstractTimeMeasure)
-	print(io, "t = $(t.value)")
-end
+Base.show(io::IO, t::AbstractTimeMeasure) = print(io, "t = $(t.value)")
 
 
 

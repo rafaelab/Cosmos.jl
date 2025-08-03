@@ -236,7 +236,6 @@ This is based on:
 	https://doi.org/10.1051/0004-6361/201833910
 
 # Input
-. `z::Maybe{AbstractVector}`: vectors at which the redshifts will be sampled (for interpolating distance measures) \\
 . `T::Type`: type of the data (defaults to `Float64`) \\
 """
 function CosmologyPlanck(; T::Type = Float64)
@@ -296,7 +295,9 @@ Determine whether a `CosmologicalModel` is described by cold dark matter.
 # Input
 . `cosmol::CosmologicalModel`: the cosmological model
 """
-isCold(cosmology::CosmologicalModel) = (cosmology.cosmology isa Cosmology.FlatLCDM) || (cosmology.cosmology isa Cosmology.OpenLCDM) || (cosmology.cosmology isa Cosmology.ClosedLCDM)
+isCold(cosmology::CosmologicalModel) = begin
+	return (cosmology.cosmology isa Cosmology.FlatLCDM) || (cosmology.cosmology isa Cosmology.OpenLCDM) || (cosmology.cosmology isa Cosmology.ClosedLCDM)
+end
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -309,7 +310,9 @@ Determine whether a `CosmologicalModel` is described by warm dark matter.
 # Input
 . `cosmol::CosmologicalModel`: the cosmological model
 """
-isWarm(cosmology::CosmologicalModel) = (cosmology.cosmology isa Cosmology.FlatWCDM) || (cosmology.cosmology isa Cosmology.OpenWCDM) || (cosmology.cosmology isa Cosmology.ClosedWCDM)
+isWarm(cosmology::CosmologicalModel) = begin
+	return (cosmology.cosmology isa Cosmology.FlatWCDM) || (cosmology.cosmology isa Cosmology.OpenWCDM) || (cosmology.cosmology isa Cosmology.ClosedWCDM)
+end
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -325,9 +328,11 @@ Base.eltype(cosmology::CosmologicalModel) = typeof(cosmology.h)
 @doc """
 Object equality comparison.
 """
-Base.:(==)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2} = (T1 == T2) && (C1 == C2) && (cosmol1.cosmology == cosmol2.cosmology) && (cosmol1.Ωb == cosmol2.Ωb) && (cosmol1.Nν == cosmol2.Nν) && (cosmol1.wEOSΛ .== cosmol1.wEOSΛ)
+Base.:(==)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2} = begin
+	return (T1 == T2) && (C1 == C2) && (cosmol1.cosmology == cosmol2.cosmology) && (cosmol1.Ωb == cosmol2.Ωb) && (cosmol1.Nν == cosmol2.Nν) && (cosmol1.wEOSΛ .== cosmol1.wEOSΛ)
+end
 
-Base.:(!=)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2} = !(cosmol1 == cosmol2)
+Base.:(!=)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2} = ! (cosmol1 == cosmol2)
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -335,7 +340,9 @@ Base.:(!=)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2
 @doc """
 Type conversion.
 """
-Base.convert(::Type{T}, cosmology::CosmologicalModel{C, U}) where {C, T <: Real, U} = CosmologicalModel{typeof(convert(T, cosmology.cosmology)), T}(convert(T, cosmology.cosmology); Ωb = cosmology.Ωb, Nν = cosmology.Nν, Tcmb = cosmology.Tcmb)
+Base.convert(::Type{T}, cosmology::CosmologicalModel{C, U}) where {C, T <: Real, U} = begin 
+	return CosmologicalModel{typeof(convert(T, cosmology.cosmology)), T}(convert(T, cosmology.cosmology); Ωb = cosmology.Ωb, Nν = cosmology.Nν, Tcmb = cosmology.Tcmb)
+end
 
 # ----------------------------------------------------------------------------------------------- #
 # 
