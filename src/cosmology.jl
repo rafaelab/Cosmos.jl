@@ -8,8 +8,8 @@ Compute the scaling function for the Hubble parameter (often dubbed `E`):
 This follows the definition from Peebles 1993 (p. ~310-322), adopted by Hogg, arXiv:astro-ph/9905116.
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model 
+. `z` [`Real`]: the redshift 
 """
 scalingFunctionHubbleParameter(cosmo::CosmologicalModel, z::Real) = Cosmology.E(cosmo.cosmology, z)
 scalingFunctionHubbleParameter(cosmo::CosmologicalModel, z::Redshift) = scalingFunctionHubbleParameter(cosmo, z.value)
@@ -20,11 +20,11 @@ scalingFunctionHubbleParameter(cosmo::CosmologicalModel, a::ScaleFactor) = scali
 @doc """ 
 	hubbleParameter(cosmology, z)
 
-Compute the Hubble parameter H(z).
+Compute the Hubble parameter H(z).  
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model
+. `z` [`Real`]: the redshift
 """
 hubbleParameter(cosmo::CosmologicalModel, z::Real) = Cosmology.H(cosmo.cosmology, z)
 hubbleParameter(cosmo::CosmologicalModel, z::Redshift) = hubbleParameter(cosmo, z.value)
@@ -39,7 +39,7 @@ hubbleParameter(cosmo::CosmologicalModel, a::ScaleFactor) = hubbleParameter(cosm
 Compute the present-day Hubble constant.
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model
 """
 hubbleConstant(cosmo::CosmologicalModel) = hubbleParameter(cosmo, 0.)
 
@@ -53,8 +53,8 @@ Compute the scale factor for a given cosmology.
 This should be the same for all cosmologies, by definition, but passing this argument fixes the correct type.
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model 
+. `z` [`Real`]: the redshift 
 """
 scaleFactor(cosmo::CosmologicalModel, z::Real) = eltype(cosmo)(1 / (1 + z))
 scaleFactor(cosmo::CosmologicalModel, z::Redshift) = ScaleFactor(z)
@@ -71,8 +71,8 @@ scaleFactor(z::Redshift) = ScaleFactor(z)
 Computes the Hubble distance for a given cosmology and possibly at a given redshift.
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model 
+. `z` [`Real`]: the redshift 
 """
 hubbleDistance(cosmo::CosmologicalModel) = Cosmology.hubble_dist0(cosmo.cosmology)
 hubbleDistance(cosmo::CosmologicalModel, z::Real) = Cosmology.hubble_dist(cosmo.cosmology, z)
@@ -90,8 +90,8 @@ Computes the Hubble distance for a given cosmology and possibly at a given redsh
 
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model 
+. `z` [`Real`]: the redshift 
 """
 hubbleTime(cosmo::CosmologicalModel) = Cosmology.hubble_time0(cosmo.cosmology)
 hubbleTime(cosmo::CosmologicalModel, z::Real) = Cosmology.hubble_time(cosmo.cosmology, z)
@@ -108,8 +108,8 @@ hubbleTime(cosmo::CosmologicalModel, a::ScaleFactor) = hubbleTime(cosmo, convert
 Computes the Hubble distance for a given cosmology and possibly at a given redshift.
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model 
+. `z` [`Real`]: the redshift 
 """
 ageOfUniverse(cosmo::CosmologicalModel) = Cosmology.age(cosmo.cosmology, zero(eltype(cosmo)))
 ageOfUniverse(cosmo::CosmologicalModel, z::Real) = Cosmology.age(cosmo.cosmology, z)
@@ -125,8 +125,8 @@ ageOfUniverse(cosmo::CosmologicalModel, a::ScaleFactor) = ageOfUniverse(cosmo, c
 Calculates the comoving volume at a given redshift.
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model 
+. `z` [`Real`]: the redshift 
 """
 comovingVolume(cosmo::CosmologicalModel, z::Real) = Cosmology.comoving_volume(cosmo.cosmology, z)
 comovingVolume(cosmo::CosmologicalModel, z::Redshift) = comovingVolume(cosmo, z.value)
@@ -141,8 +141,8 @@ comovingVolume(cosmo::CosmologicalModel, a::ScaleFactor) = comovingVolume(cosmo,
 Calculates the comoving volume element at a given redshift.
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model 
+. `z` [`Real`]: the redshift 
 """
 comovingVolumeElement(cosmo::CosmologicalModel, z::Real) = Cosmology.comoving_volume_element(cosmo.cosmology, z)
 comovingVolumeElement(cosmo::CosmologicalModel, z::Redshift) = comovingVolumeElement(cosmo, z.value)
@@ -164,10 +164,10 @@ This is Hogg's eq. 28 adjusted.
 NOTE: check nomenclature.
 
 # Input
-. `cosmo` [`CosmologicalModel`]: the cosmological model \\
-. `z` [`Real`]: the redshift \\
-. `z` [`Redshift`]: the redshift (of type `Redshift`) \\
-. `a` [`ScaleFactor`]: the scale factor type \\
+. `cosmo` [`CosmologicalModel`]: the cosmological model 
+. `z` [`Real`]: the redshift 
+. `z` [`Redshift`]: the redshift (of type `Redshift`) 
+. `a` [`ScaleFactor`]: the scale factor type 
 """
 comovingElement(cosmo::CosmologicalModel, z::Float64) = hubbleDistance(cosmo, z)  / Cosmology.E(cosmo.cosmology, z) / (1 + z)
 comovingElement(cosmo::CosmologicalModel, z::Redshift) = comovingElement(cosmo, z.value)

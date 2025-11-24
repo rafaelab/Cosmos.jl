@@ -8,8 +8,8 @@
 Display information of `CosmologicalModel` types.
 
 # Input
-. `io` [`IO`]: `IO`-type objects with standard output \\
-. `cosmology` [`CosmologicalModel`]: the cosmological model object \\
+. `io` [`IO`]: `IO`-type objects with standard output 
+. `cosmology` [`CosmologicalModel`]: the cosmological model object 
 """
 function Base.show(io::IO, cosmology::CosmologicalModel)
 	printstyled(io, "$(typeof(cosmology)) = \n"; bold = true)
@@ -42,8 +42,8 @@ end
 Display information of `Redshift` types.
 
 # Input
-. `io` [`IO`]: `IO`-type objects with standard output \\
-. `z` [`Redshift`]: the redshift \\
+. `io` [`IO`]: `IO`-type objects with standard output 
+. `z` [`Redshift`]: the redshift 
 """
 Base.show(io::IO, z::Redshift) = print(io, "z = $(z.value)")
 
@@ -58,8 +58,8 @@ Base.show(io::IO, z::Redshift) = print(io, "z = $(z.value)")
 Display information about `ScaleFactor` types.
 
 # Input
-. `io` [`IO`]: `IO`-type objects with standard output \\
-. `a` [`ScaleFactor`]: the scale factor \\
+. `io` [`IO`]: `IO`-type objects with standard output 
+. `a` [`ScaleFactor`]: the scale factor 
 """
 Base.show(io::IO, a::ScaleFactor) = print(io, "a = $(a.value)")
 
@@ -75,8 +75,8 @@ Display information about `AbstractDistanceMeasure` types.
 Note that distances are cosmology-dependent, but this information is not displayed.
 
 # Input
-. `io` [`IO`]: `IO`-type objects with standard output \\
-. `d` [`AbstractDistanceMeasure`]: a distance object \\
+. `io` [`IO`]: `IO`-type objects with standard output 
+. `d` [`AbstractDistanceMeasure`]: a distance object 
 """
 Base.show(io::IO, d::AbstractDistanceMeasure) = print(io, "d = $(d.value)")
 
@@ -92,8 +92,8 @@ Display information about `AbstractTimeMeasure` types.
 Note that times are cosmology-dependent, but this information is not displayed.
 
 # Input
-. `io` [`IO`]: `IO`-type objects with standard output \\
-. `t` [`AbstractTimeMeasure`]: the time measure \\
+. `io` [`IO`]: `IO`-type objects with standard output 
+. `t` [`AbstractTimeMeasure`]: the time measure 
 """
 Base.show(io::IO, t::AbstractTimeMeasure) = print(io, "t = $(t.value)")
 
