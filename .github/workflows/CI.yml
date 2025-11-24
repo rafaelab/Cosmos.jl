@@ -22,7 +22,7 @@ jobs:
       - name: Set up Julia
         uses: julia-actions/setup-julia@v2
         with:
-          version: '1.11'
+          version: '1.12'
 
       - name: Cache Julia dependencies and precompilation
         uses: actions/cache@v4
@@ -50,7 +50,7 @@ jobs:
       - name: Set up Julia
         uses: julia-actions/setup-julia@v2
         with:
-          version: '1.11'
+          version: '1.12'
 
       - name: Develop package  in docs environment and install dependencies
         run: |
