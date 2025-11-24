@@ -1,13 +1,13 @@
 # ----------------------------------------------------------------------------------------------- #
 # 
 @doc """
-Abstract supertype for distance measurements.
+Abstract supertype for distance measurements.  
 Sub-types include: 
-. `DistanceComoving`, 
-. `DistanceLightTravel`,
-. `DistanceAngularDiameter`,
-. `DistanceComovingTransverse`,
-. `DistanceLuminosity`.
+- `DistanceComoving`, 
+- `DistanceLightTravel`,
+- `DistanceAngularDiameter`,
+- `DistanceComovingTransverse`,
+- `DistanceLuminosity`.
 """
 abstract type AbstractDistanceMeasure end
 
@@ -16,8 +16,8 @@ abstract type AbstractDistanceMeasure end
 @doc """
 Abstract supertype for time measurements.
 Sub-types include: 
-. `TimeLookback`,
-. `TimeConformal`.
+- `TimeLookback`,
+- `TimeConformal`.
 """
 abstract type AbstractTimeMeasure end
 
@@ -51,17 +51,18 @@ for distanceType ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter"
 	end
 	
 	@eval begin
-		@doc """
+		@doc raw"""
 		Convenient object to help with distance measures conversions.
 		$($(info))
 		For more information see:
-			"Distance measures in cosmology" \n
-			D. Hogg \n
-			arXiv:astro-ph/9905116 \n
+			"Distance measures in cosmology"
+			D. Hogg
+			arXiv:astro-ph/9905116
 
+		
 		# Input
-		. `cosmology::CosmologicalModel`: the cosmological model to be used as reference \\
-		. `d::Length{T}`: the distance \\
+		- `cosmology::CosmologicalModel`: the cosmological model to be used as reference
+		- `d::Length{T}`: the distance
 		"""
 		mutable struct $(name){T <: Real} <: AbstractDistanceMeasure
 			cosmology::CosmologicalModel
@@ -131,9 +132,10 @@ for timeType in ("Lookback", "Conformal")
 			D. Hogg
 			arXiv:astro-ph/9905116
 
+		
 		# Input
-		. `cosmology::CosmologicalModel`: the cosmological model to be used as reference \\
-		. `t::Time{T}`: the time \\
+		- `cosmology::CosmologicalModel`: the cosmological model to be used as reference 
+		- `t::Time{T}`: the time
 		"""
 		mutable struct $(name){T <: Real} <: AbstractTimeMeasure
 			cosmology::CosmologicalModel
