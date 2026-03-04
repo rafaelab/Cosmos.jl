@@ -1,3 +1,25 @@
+module Internal
+
+using Base.Threads
+using Cosmology
+import Cosmology: AbstractCosmology
+using Cosmonstants: SpeedOfLightInVacuum
+using Interpolations: SteffenMonotonicInterpolation, interpolate
+using Unitful
+using Unitful: u, ustrip, uconvert
+using UnitfulAstro
+
+function prepareRedshiftSamples(T::Type{<: Real})
+	z = T[]
+	append!(z, -10. .^ collect(range(-3., 0.; length = 91)))
+	append!(z, collect(range(-0.001, 0.001; length = 31)))
+	append!(z, collect(range(0.001, 10.; length = 81)))
+	append!(z, collect(range(1., 2.; length = 21)))
+	append!(z, 10 .^ collect(range(2., 4.; length = 41)))
+	unique!(z)
+	return z
+end
+
 function conversionsFromRedshift(cosmo::AbstractCosmology)
 	T = eltype(cosmo)
 
@@ -52,7 +74,6 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 		@inbounds tC[i] = ustrip.(uconvert(u"s", tC0))
 	end
 
-	# get indices for monotonic interpolations
 	idxDC = sortperm(dC)
 	idxDL = sortperm(dL)
 	idxDP = sortperm(dP)
@@ -93,4 +114,6 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 		lookback = tl2z,
 		conformal = tc2z
 	)
+end
+
 end
