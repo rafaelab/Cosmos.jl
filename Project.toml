@@ -1,6 +1,6 @@
 name = "Cosmos"
 uuid = "78433a98-c9b8-45ad-92d3-77baa2d1b51d"
-version = "1.2.0"
+version = "1.2.1"
 authors = ["Rafael <rafaelab@users.noreply.github.com>"]
 
 [deps]
