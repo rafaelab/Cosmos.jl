@@ -1,29 +1,14 @@
-
 ## Examples
 
-### Planck 2018 cosmological parameters
-```
-using Cosmos
+Cosmos.jl ships with a handful of runnable scripts under the repository `examples/` directory. Each script demonstrates how one of the provided helpers behaves.
 
-cosmology = CosmologyPlanck()
-print(cosmology)
-```
+1. `examples/distance-conversions.jl` shows how to build `DistanceComoving`, convert it into `Redshift`/`ScaleFactor`, and move between distance measures without re-specifying the cosmology.
+2. `examples/time-conversions.jl` walks through `TimeLookback`/`TimeConformal` and how to pass `Redshift`/`ScaleFactor` into the constructors.
+3. `examples/custom-cosmology.jl` creates a non-Planck cosmology, highlights optional baryon handling, and prints the derived parameters.
 
-### Distance/Time Measures
-
-It enables efficient conversion of distance and time measures in cosmology. 
+To run an example:
 ```
-d = DistanceComoving(cosmology, 1000. * u"Mpc")
-z1 = d |> Redshift 
-z2 = convert(Redshift, d) # alternative
-a = z1 |> ScaleFactor
-D = convert(DistanceLuminosity, d)
+julia examples/distance-conversions.jl
 ```
 
-It can also get a distance between two redshifts:
-```
-d = DistanceLightTravel(cosmology, Redshift(5.), Redshift(0.5))
-```
-
-Note that while these conversions might be convenient and intuitive, they are not (necessarily) efficient. 
-
+Each script is stand-alone and includes explanatory comments on the conversions being performed.

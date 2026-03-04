@@ -1,15 +1,12 @@
 # Cosmos.jl
 
-A Julia package that wraps and extends [Cosmology.jl](https://github.com/JuliaAstro/Cosmology.jl/) to what I consider to be a more convenient form.
-Things should work, but the code has not yet been thoroughly tested.
+Cosmos.jl wraps and extends [Cosmology.jl](https://github.com/JuliaAstro/Cosmology.jl) with ergonomic value types, cached conversion helpers, and a Planck-motivated default cosmology.
 
+Key additions:
 
-This is largely based on `Cosmology.jl`, with some additions from:
-"Distance Measures in Cosmology", by D. W. Hogg, [astro-ph/9905116](https://arxiv.org/abs/astro-ph/9905116).
+- `CosmologicalModel` consolidates cosmology parameters, caching of conversion lookups, and optional baryon/neutrino metadata.
+- Distance/time wrappers (`DistanceComoving`, `TimeLookback`, etc.) store their cosmology and expose friendly conversions toward `Redshift` and `ScaleFactor`.
+- `CosmologyPlanck()` sets the default cosmology so you can skip parameter wiring for most use cases.
+- Typed conversion tables (`NamedTuple`s) and `Unitful` helpers keep repeated lookups efficient and safe.
 
-
-
-
-
-
-
+Refer to `docs/src/examples.md` or `examples/` to see runnable distance and time conversion snippets.

@@ -4,43 +4,52 @@
 [![Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://rafaelab.github.io/Cosmos.jl/index.html)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
+Pragmatic helpers for cosmology that wrap [Cosmology.jl](https://github.com/JuliaAstro/Cosmology.jl) and expose default conversions, rich distance/time value types, and typed helpers for common Planck-like models.
 
-Useful tools for astrophysics and cosmology. 
-It wraps and extends [Cosmology.jl](https://github.com/JuliaAstro/Cosmology.jl/).
+## Features
 
-Things should work, but the code has not yet been thoroughly tested.
+- `CosmologicalModel` keeps planck-compatible defaults, cached interpolation tables (distance/time ↔ redshift), and guards for optional parameters (e.g., baryons).
+- Distance/time wrappers such as `DistanceComoving`, `DistanceLightTravel`, `TimeLookback`, and `TimeConformal` work with `Redshift`/`ScaleFactor` conversions out of the box.
+- Typed conversion tables (`NamedTuple`s) keep lookups fast and avoid repeated `Dict` allocations.
+- `CosmologyPlanck()` seeds the default cosmology, so you can build conversions without wiring up parameters manually.
 
+## Getting started
 
-## Examples
-
-### Planck 2018 cosmological parameters
-```
+```julia
 using Cosmos
 
-cosmology = CosmologyPlanck()
-print(cosmology)
+cosmo = CosmologyPlanck()
+d = DistanceComoving(cosmo, 600u"Mpc")
+
+redshift = d |> Redshift
+scale = redshift |> ScaleFactor
+luminosity = convert(DistanceLuminosity, d)
 ```
 
-### Distance/Time Measures
+All distance/time conversions honour the cosmology stored in the value, so chained conversions stay consistent without re-specifying the model.
 
-It enables efficient conversion of distance and time measures in cosmology. 
-```
-d = DistanceComoving(cosmology, 600. * u"Mpc")
-z1 = d |> Redshift 
-z2 = convert(Redshift, d) # alternative
-a = z1 |> ScaleFactor
-D = convert(DistanceLuminosity, d)
-```
+## Distance & time helpers
 
-It can also get a distance between two redshifts:
-```
-d = DistanceLightTravel(cosmology, Redshift(5.), Redshift(0.5))
+Along with the conversion wrappers shown above, you can create a distance from two redshifts or scale factors:
+
+```julia
+z1 = Redshift(2.0)
+z0 = Redshift(0.1)
+dt = DistanceLightTravel(cosmo, z1, z0)
 ```
 
-Note that while these conversions might be convenient and intuitive, they are not (necessarily) efficient.
+This package pre-builds monotonic interpolations between redshift and any supported measure to keep repeated lookups fast, so repeated `DistanceXXX` constructors reuse cached tables rather than recomputing cosmology integrals.
 
+## Tests & docs
 
-## Disclaimer
+- Run the bundled test suite with `julia --project -e 'using Pkg; Pkg.test()'`.
+- Documentation is built with Documenter and lives at https://rafaelab.github.io/Cosmos.jl (see `docs/src` for the source).
+- Example scripts live in `examples/`; each script is runnable via `julia examples/name.jl` to demonstrate common conversions.
 
-This program is provided 'as is', without warranties of any kind. 
-Please use your discernment to interpret the results obtained with it.
+## Contributing
+
+Fixes and extensions are welcome. Please keep tests green, prefer descriptive doc strings, and run `Pkg.test()` before opening a PR.
+
+## License
+
+MIT © Rafael Abreu
