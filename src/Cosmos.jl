@@ -66,8 +66,8 @@ import Unitful:
 
 
 
-include("common.jl") 
-include("auxiliary.jl")
+include("common.jl")
+include("internal/internal.jl")
 include("redshift.jl")
 include("cosmologicalModel.jl")
 include("cosmology.jl")
