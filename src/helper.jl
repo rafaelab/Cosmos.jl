@@ -1,12 +1,5 @@
-using Base.Threads
-using Cosmology
-import Cosmology: AbstractCosmology
-using Cosmonstants: SpeedOfLightInVacuum
-using Interpolations: SteffenMonotonicInterpolation, interpolate
-using Unitful
-using Unitful: u, ustrip, uconvert
-using UnitfulAstro
-
+# ----------------------------------------------------------------------------------------------- #
+# 
 function prepareRedshiftSamples(T::Type{<: Real})
 	z = T[]
 	append!(z, -10. .^ collect(range(-3., 0.; length = 91)))
@@ -18,6 +11,8 @@ function prepareRedshiftSamples(T::Type{<: Real})
 	return z
 end
 
+# ----------------------------------------------------------------------------------------------- #
+# 
 function conversionsFromRedshift(cosmo::AbstractCosmology)
 	T = eltype(cosmo)
 
@@ -40,6 +35,8 @@ function conversionsFromRedshift(cosmo::AbstractCosmology)
 	)
 end
 
+# ----------------------------------------------------------------------------------------------- #
+# 
 function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 	T = eltype(cosmo)
 	z = convert(Vector{T}, z)
@@ -113,3 +110,6 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 		conformal = tc2z
 	)
 end
+
+# ----------------------------------------------------------------------------------------------- #
+# 

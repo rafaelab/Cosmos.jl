@@ -46,7 +46,6 @@ using StaticArrays
 @reexport using UnitfulAstro
 
 import Cosmology
-
 import Cosmology:
 	AbstractCosmology,
 	OpenLCDM, 
@@ -55,7 +54,6 @@ import Cosmology:
 	OpenWCDM, 
 	ClosedWCDM, 
 	FlatWCDM
-
 import Unitful:
 	Length,
 	Temperature,
