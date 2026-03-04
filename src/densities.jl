@@ -113,7 +113,7 @@ Computes the density of matter in the universe at a given redshift:
 - `z::Real`: the redshift at which to compute the density
 """
 function computeBaryonDensity(cosmology::CosmologicalModel; z::Real = 0.)
-	cosmology.Ωb < 0 || throw(ArgumentError("Cannot compute the baryon density because the baryon fraction was not provided to the `CosmologicalModel`."))
+	cosmology.Ωb ≥ 0 || throw(ArgumentError("Cannot compute the baryon density because the baryon fraction was not provided to the `CosmologicalModel`."))
 	ρc = computeCriticalDensity(cosmology; z = z)
 	return upreferred(cosmology.Ωb * ρc)
 end

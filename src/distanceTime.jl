@@ -69,7 +69,8 @@ for distanceType ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter"
 			value::Length{T}
 
 			function $(name){T}(cosmology::CosmologicalModel{C, T}, distance::Length) where {C, T}
-				return new{T}(cosmology, T(distance |> u"Mpc"))
+				val = T(ustrip(uconvert(u"Mpc", distance))) * u"Mpc"
+				return new{T}(cosmology, val)
 			end
 		end
 
@@ -77,7 +78,7 @@ for distanceType ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter"
 
 		$(name)(cosmology::CosmologicalModel{C, T}, distance::Real) where {C, T} = $(name){T}(cosmology, distance * u"Mpc")
 
-		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, cosmology.fromRedshift[$(QuoteNode(label))](z.value, z0.value))
+		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, getfield(cosmology.fromRedshift, $(QuoteNode(label)))(z.value, z0.value))
 
 		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift) where {C, T} = $(name)(cosmology, Redshift(T(0.)), z)
 
@@ -85,17 +86,17 @@ for distanceType ∈ ("LightTravel", "Comoving", "Luminosity", "AngularDiameter"
 
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor) where {C, T} = $(name)(cosmology, ScaleFactor(a), ScaleFactor(T(1.)))
 
-		$(name)(distance::Union{Length, Real}) = $(name)(defaultCosmology, distance)
+		$(name)(distance::Union{Length, Real}) = $(name)(defaultCosmology(), distance)
 
-		$(name)(z::Redshift, z0::Redshift) = $(name)(defaultCosmology, z, z0)
+		$(name)(z::Redshift, z0::Redshift) = $(name)(defaultCosmology(), z, z0)
 
-		$(name)(z::Redshift) = $(name)(defaultCosmology, z)
+		$(name)(z::Redshift) = $(name)(defaultCosmology(), z)
 
-		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(defaultCosmology, a, a0)
+		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(defaultCosmology(), a, a0)
 
-		$(name)(a::ScaleFactor) = $(name)(defaultCosmology, a)
+		$(name)(a::ScaleFactor) = $(name)(defaultCosmology(), a)
 
-		Redshift{Z}(distance::$(name)) where {Z} = Redshift{Z}(distance.cosmology.toRedshift[$(QuoteNode(label))](distance.value))
+		Redshift{Z}(distance::$(name)) where {Z} = Redshift{Z}(getfield(distance.cosmology.toRedshift, $(QuoteNode(label)))(distance.value))
 
 		Redshift(distance::$(name)) = Redshift{eltype(distance)}(distance)
 
@@ -142,15 +143,16 @@ for timeType in ("Lookback", "Conformal")
 			value::Time{T}
 
 			$(name){T}(cosmology::CosmologicalModel{C, T}, time::Time) where {C, T} = begin
-				return new{T}(cosmology, T(time |> u"yr"))
+				val = T(ustrip(uconvert(u"yr", time))) * u"yr"
+				return new{T}(cosmology, val)
 			end
 		end
 
-		$(name)(cosmology::CosmologicalModel{C, T}, time::Length) where {C, T} = $(name){T}(cosmology, time)
+		$(name)(cosmology::CosmologicalModel{C, T}, time::Time) where {C, T} = $(name){T}(cosmology, time)
 
 		$(name)(cosmology::CosmologicalModel{C, T}, time::Real) where {C, T} = $(name){T}(cosmology, time * u"yr")
 
-		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, cosmology.fromRedshift[$(QuoteNode(label))](z.value, z0.value))
+		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift, z0::Redshift) where {C, T} = $(name)(cosmology, getfield(cosmology.fromRedshift, $(QuoteNode(label)))(z.value, z0.value))
 
 		$(name)(cosmology::CosmologicalModel{C, T}, z::Redshift) where {C, T} = $(name)(cosmology, z, Redshift(T(0)))
 
@@ -158,17 +160,17 @@ for timeType in ("Lookback", "Conformal")
 
 		$(name)(cosmology::CosmologicalModel{C, T}, a::ScaleFactor) where {C, T} = $(name)(cosmology, ScaleFactor(a), ScaleFactor(T(1.)))
 
-		$(name)(time::Union{Length, Real}) = $(name)(defaultCosmology, time)
+		$(name)(time::Union{Time, Real}) = $(name)(defaultCosmology(), time)
 
-		$(name)(z::Redshift, z0::Redshift) = $(name)(defaultCosmology, z, z0)
+		$(name)(z::Redshift, z0::Redshift) = $(name)(defaultCosmology(), z, z0)
 
-		$(name)(z::Redshift) = $(name)(defaultCosmology, z)
+		$(name)(z::Redshift) = $(name)(defaultCosmology(), z)
 
-		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(defaultCosmology, a, a0)
+		$(name)(a::ScaleFactor, a0::ScaleFactor) = $(name){T}(defaultCosmology(), a, a0)
 
-		$(name)(a::ScaleFactor) = $(name)(defaultCosmology, a)
+		$(name)(a::ScaleFactor) = $(name)(defaultCosmology(), a)
 
-		Redshift{Z}(time::$(name)) where {Z} = Redshift{Z}(time.cosmology.toRedshift[$(QuoteNode(label))](time.value))
+		Redshift{Z}(time::$(name)) where {Z} = Redshift{Z}(getfield(time.cosmology.toRedshift, $(QuoteNode(label)))(time.value))
 
 		Redshift(time::$(name)) = Redshift{eltype(time)}(time)
 
@@ -273,7 +275,7 @@ for timeType1 ∈ ("Lookback", "Conformal")
 				It assumes that the underlying `CosmologicalModel` is the same for both.
 				These conversions assume times with respect to present time (z=0).
 				"""
-				Base.convert(::Type{$(t1){T1}}, t::$(t2){T2}) where {T1, T2} = $(t1){promote_type(T1, T2)}(convert(T1, d.cosmology), Redshift(t))
+				Base.convert(::Type{$(t1){T1}}, t::$(t2){T2}) where {T1, T2} = $(t1){promote_type(T1, T2)}(convert(T1, t.cosmology), Redshift(t))
 				Base.convert(::Type{$(t1)}, t::$(t2){T2}) where {T2} = $(t2) |> $(t1)
 			end
 		end

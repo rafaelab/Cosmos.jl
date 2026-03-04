@@ -67,8 +67,8 @@ mutable struct CosmologicalModel{C <: AbstractCosmology, T <: Real}
 	Nν::T
 	wEOSΛ::SVector{2, T}
 	cosmology::C
-	toRedshift::Dict{Symbol, Function}
-	fromRedshift::Dict{Symbol, Function}
+	toRedshift::ConversionTuple
+	fromRedshift::ConversionTuple
 	zArray::Vector{T}
 
 	function CosmologicalModel{C, T}(cosmo::C; Ωb::Real = -1., Tcmb::Real = 2.7255, Nν::Real = 3., z::Maybe{AbstractVector} = nothing) where {C <: AbstractCosmology, T <: Real}
@@ -138,16 +138,15 @@ function conversionsFromRedshift(cosmo::AbstractCosmology)
 	z2tc(z2::Real, z1::Real) = T(z2dc(z2, z1) / SpeedOfLightInVacuum |> u"yr")
 	z2dp(z2::Real, z1::Real) = T(z2tl(z2, z1) * SpeedOfLightInVacuum |> u"Mpc")
 
-	funcDict = Dict()
-	funcDict[:comoving] = z2dc
-	funcDict[:lightTravel] = z2dp
-	funcDict[:luminosity] = z2dl
-	funcDict[:transverseComoving] = z2dt
-	funcDict[:angularDiameter] = z2da
-	funcDict[:lookback] = z2tl
-	funcDict[:conformal] = z2tc
-
-	return funcDict
+	return (
+		comoving = z2dc,
+		lightTravel = z2dp,
+		luminosity = z2dl,
+		transverseComoving = z2dt,
+		angularDiameter = z2da,
+		lookback = z2tl,
+		conformal = z2tc
+	)
 end
 
 function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
@@ -224,7 +223,15 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 	funcDict[:lookback] = tl2z
 	funcDict[:conformal] = tc2z
 
-	return funcDict
+	return (
+		comoving = dc2z,
+		lightTravel = dp2z,
+		luminosity = dl2z,
+		transverseComoving = dt2z,
+		angularDiameter = da2z,
+		lookback = tl2z,
+		conformal = tc2z
+	)
 end
 
 # ----------------------------------------------------------------------------------------------- #
@@ -338,7 +345,7 @@ Base.eltype(cosmology::CosmologicalModel) = typeof(cosmology.h)
 Object equality comparison.
 """
 Base.:(==)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2} = begin
-	return (T1 == T2) && (C1 == C2) && (cosmol1.cosmology == cosmol2.cosmology) && (cosmol1.Ωb == cosmol2.Ωb) && (cosmol1.Nν == cosmol2.Nν) && (cosmol1.wEOSΛ .== cosmol1.wEOSΛ)
+	return (T1 == T2) && (C1 == C2) && (cosmol1.cosmology == cosmol2.cosmology) && (cosmol1.Ωb == cosmol2.Ωb) && (cosmol1.Nν == cosmol2.Nν) && (cosmol1.wEOSΛ == cosmol2.wEOSΛ)
 end
 
 Base.:(!=)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2} = ! (cosmol1 == cosmol2)

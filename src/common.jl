@@ -5,6 +5,7 @@ Useful alias for type definition.
 To prevent conflicts, this is not exported.
 """
 const Maybe{T} = Union{Nothing, T}
+const ConversionTuple = NamedTuple{(:comoving, :lightTravel, :luminosity, :transverseComoving, :angularDiameter, :lookback, :conformal), <:Tuple}
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -45,6 +46,14 @@ Base.eltype(cosmo::AbstractCosmology) = typeof(cosmo.h)
 Define global variable to hold information about the default cosmological model.
 """
 const defaultCosmologyRef = Ref{Any}(nothing)
+function defaultCosmology()
+	cosmo = defaultCosmologyRef[]
+	if isnothing(cosmo)
+		cosmo = CosmologyPlanck()
+		setDefaultCosmology(cosmo)
+	end
+	return cosmo
+end
 
 # ----------------------------------------------------------------------------------------------- #
 # 

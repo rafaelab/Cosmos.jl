@@ -33,7 +33,8 @@ export
 	computeMatterDensity,
 	computeDarkEnergyDensity,
 	computeCurvatureDensity,
-	computeRadiationDensity
+	computeRadiationDensity,
+	computeBaryonDensity
 
 
 using Interpolations
