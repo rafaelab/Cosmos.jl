@@ -1,7 +1,8 @@
-using Cosmos, Unitful
+using Cosmos
+using Unitful
 
 cosmo = CosmologyPlanck()
-distance = DistanceComoving(cosmo, 600u"Mpc")
+distance = DistanceComoving(cosmo, 600. * u"Mpc")
 redshift = distance |> Redshift
 scale = redshift |> ScaleFactor
 luminosity = convert(DistanceLuminosity, distance)

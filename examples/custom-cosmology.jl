@@ -1,4 +1,7 @@
-using Cosmos, Unitful
+using Cosmos
+using Unitful
+
+
 
 cosmo = CosmologicalModel(0.68, 0.3, 0.01, 8e-5; Ωb = 0.048, Nν = 3.1)
 

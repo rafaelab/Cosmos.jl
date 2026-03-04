@@ -1,7 +1,10 @@
-using Cosmos, Unitful
+using Cosmos
+using Unitful
+
+
 
 cosmo = CosmologyPlanck()
-time = TimeLookback(cosmo, Redshift(2.0))
+time = TimeLookback(cosmo, Redshift(2.))
 conformal = TimeConformal(cosmo, time |> Redshift)
 
 println("Time conversions")
