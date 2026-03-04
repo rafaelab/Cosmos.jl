@@ -1,5 +1,3 @@
-module Internal
-
 using Base.Threads
 using Cosmology
 import Cosmology: AbstractCosmology
@@ -114,6 +112,4 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 		lookback = tl2z,
 		conformal = tc2z
 	)
-end
-
 end
