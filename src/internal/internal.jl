@@ -9,7 +9,7 @@ using Unitful
 using Unitful: u, ustrip, uconvert
 using UnitfulAstro
 
-include("redshift_samples.jl")
-include("conversion_tables.jl")
+include("redshiftSamples.jl")
+include("conversionTables.jl")
 
 end
