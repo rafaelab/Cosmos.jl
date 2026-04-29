@@ -1,4 +1,5 @@
 Manifest.toml
+AGENTS.md
 docs/build/
 test/plots/*
 .DS_Store
