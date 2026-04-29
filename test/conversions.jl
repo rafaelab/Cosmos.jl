@@ -16,7 +16,7 @@ end
 @testset "Time conversion robustness" begin
 	cosmo = CosmologyPlanck()
 	tl = TimeLookback(cosmo, 1.0u"Gyr")
-	@test uconvert(u"Gyr", tl.value) ≈ 1.0u"Gyr"
+	@test uconvert(u"Gyr", tl.value) ≈ 1.0 * u"Gyr"
 
 	tc = convert(TimeConformal{Float32}, TimeConformal(cosmo, Redshift(0.5)))
 	@test eltype(tc) == Float32
