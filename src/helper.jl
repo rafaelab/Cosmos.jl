@@ -1,56 +1,108 @@
 # ----------------------------------------------------------------------------------------------- #
+#
+@doc """
+	UnitInterpolation{I, U}
+
+Callable struct pairing a monotonic interpolation object with a Unitful unit for input
+normalisation.
+Calling with a bare `Real` forwards the value directly to the interpolation (must already be
+expressed in the correct SI unit).
+Calling with a `Unitful.Quantity` first converts to `unit`, strips, then forwards.
+
+# Members
+- `interp` [`I`]: the underlying monotonic interpolation object
+- `unit` [`U`]: Unitful unit used to normalise `Quantity` inputs (e.g. `u"m"`, `u"s"`)
+"""
+struct UnitInterpolation{I, U}
+	interp::I
+	unit::U
+end
+
+@inline (w::UnitInterpolation)(x::Real) = w.interp(x)
+@inline (w::UnitInterpolation)(x::Unitful.Quantity) = w.interp(ustrip(uconvert(w.unit, x)))
+
+# ----------------------------------------------------------------------------------------------- #
+#
+function sortedInterpolation(xs::Vector{T}, ys::Vector{T}) where {T <: Real}
+	p = sortperm(xs)
+	return interpolate(xs[p], ys[p], SteffenMonotonicInterpolation())
+end
+
+# ----------------------------------------------------------------------------------------------- #
+#
+@doc """
+	RedshiftConversion{C, T, F}
+
+Callable struct encoding one redshift-to-observable conversion.
+Storing the specific Cosmology.jl function as the concrete type parameter `F` avoids
+heap-allocated closures and enables full inlining.
+
+# Members
+- `cosmo` [`C`]: the underlying `AbstractCosmology` object
+- `f` [`F`]: a top-level function `(cosmo, z2, z1) -> observable`
+"""
+struct RedshiftConversion{T <: Real, C <: AbstractCosmology, F}
+	cosmo::C
+	f::F
+end
+
+RedshiftConversion{T}(cosmo::C, f::F) where {T <: Real, C <: AbstractCosmology, F} = RedshiftConversion{T, C, F}(cosmo, f)
+
+
+@inline (w::RedshiftConversion{T, C, F})(z2::Real, z1::Real) where {T, C, F} = T(w.f(w.cosmo, z2, z1))
+
+# ----------------------------------------------------------------------------------------------- #
+#
+@inline _redshiftToComovingDistance(cosmo, z2::Real, z1::Real) = Cosmology.comoving_radial_dist(cosmo, z2, z1)
+@inline _redshiftToLuminosityDistance(cosmo, z2::Real, z1::Real) = Cosmology.luminosity_dist(cosmo, z2) - Cosmology.luminosity_dist(cosmo, z1)
+@inline _redshiftToTransverseComovingDistance(cosmo, z2::Real, z1::Real) = Cosmology.transverse_comoving_dist(cosmo, z2, z1)
+@inline _redshiftToAngularDiameterDistance(cosmo, z2::Real, z1::Real) = Cosmology.angular_diameter_dist(cosmo, z1, z2)
+@inline _redshiftToLookbackTime(cosmo, z2::Real, z1::Real) = Cosmology.lookback_time(cosmo, z2) - Cosmology.lookback_time(cosmo, z1)
+@inline _redshiftToConformalTime(cosmo, z2::Real, z1::Real) = Cosmology.comoving_radial_dist(cosmo, z2, z1) / SpeedOfLightInVacuum |> u"yr"
+@inline _redshiftToLightTravelDistance(cosmo, z2::Real, z1::Real) = (Cosmology.lookback_time(cosmo, z2) - Cosmology.lookback_time(cosmo, z1)) * SpeedOfLightInVacuum |> u"Mpc"
+
+# ----------------------------------------------------------------------------------------------- #
 # 
 function prepareRedshiftSamples(T::Type{<: Real})
 	z = T[]
-	append!(z, -10. .^ collect(range(-3., 0.; length = 91)))
+	append!(z, -exp10.(range(-3., 0.; length = 91)))
 	append!(z, collect(range(-0.001, 0.001; length = 31)))
 	append!(z, collect(range(0.001, 10.; length = 81)))
 	append!(z, collect(range(1., 2.; length = 21)))
-	append!(z, 10 .^ collect(range(2., 4.; length = 41)))
+	append!(z, exp10.(range(2., 4.; length = 41)))
 	unique!(z)
 	return z
 end
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-function conversionsFromRedshift(cosmo::AbstractCosmology)
-	T = eltype(cosmo)
-
-	z2dl(z2::Real, z1::Real) = T(Cosmology.luminosity_dist(cosmo, z2) - Cosmology.luminosity_dist(cosmo, z1))
-	z2dc(z2::Real, z1::Real) = T(Cosmology.comoving_radial_dist(cosmo, z2, z1))
-	z2dt(z2::Real, z1::Real) = T(Cosmology.transverse_comoving_dist(cosmo, z2, z1))
-	z2da(z2::Real, z1::Real) = T(Cosmology.angular_diameter_dist(cosmo, z1, z2))
-	z2tl(z2::Real, z1::Real) = T(Cosmology.lookback_time(cosmo, z2) - Cosmology.lookback_time(cosmo, z1))
-	z2tc(z2::Real, z1::Real) = T(z2dc(z2, z1) / SpeedOfLightInVacuum |> u"yr")
-	z2dp(z2::Real, z1::Real) = T(z2tl(z2, z1) * SpeedOfLightInVacuum |> u"Mpc")
-
+function conversionsFromRedshift(cosmo::C, ::Type{T}) where {C <: AbstractCosmology, T <: Real}
 	return (
-		comoving = z2dc,
-		lightTravel = z2dp,
-		luminosity = z2dl,
-		transverseComoving = z2dt,
-		angularDiameter = z2da,
-		lookback = z2tl,
-		conformal = z2tc
+		comoving = RedshiftConversion{T}(cosmo, _redshiftToComovingDistance),
+		lightTravel = RedshiftConversion{T}(cosmo, _redshiftToLightTravelDistance),
+		luminosity = RedshiftConversion{T}(cosmo, _redshiftToLuminosityDistance),
+		transverseComoving = RedshiftConversion{T}(cosmo, _redshiftToTransverseComovingDistance),
+		angularDiameter = RedshiftConversion{T}(cosmo, _redshiftToAngularDiameterDistance),
+		lookback = RedshiftConversion{T}(cosmo, _redshiftToLookbackTime),
+		conformal = RedshiftConversion{T}(cosmo, _redshiftToConformalTime),
 	)
 end
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
-	T = eltype(cosmo)
+function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector, ::Type{T}) where {T <: Real}
 	z = convert(Vector{T}, z)
-	z = z[z .> -1.0]
+	filter!(>(T(-1)), z)
 	sort!(z)
 
-	# pre-allocate arrays
-	dC = Vector{T}(undef, length(z))
-	dL = Vector{T}(undef, length(z))
-	dP = Vector{T}(undef, length(z))
-	dT = Vector{T}(undef, length(z))
-	dA = Vector{T}(undef, length(z))
-	tC = Vector{T}(undef, length(z))
-	tL = Vector{T}(undef, length(z))
+	n = length(z)
+	dC = Vector{T}(undef, n)
+	dL = Vector{T}(undef, n)
+	dP = Vector{T}(undef, n)
+	dT = Vector{T}(undef, n)
+	dA = Vector{T}(undef, n)
+	tC = Vector{T}(undef, n)
+	tL = Vector{T}(undef, n)
 
 	Threads.@threads for i ∈ eachindex(z)
 		dC0 = Cosmology.comoving_radial_dist(cosmo, z[i])
@@ -58,56 +110,23 @@ function conversionsToRedshift(cosmo::AbstractCosmology, z::AbstractVector)
 		dT0 = Cosmology.comoving_transverse_dist(cosmo, z[i])
 		dA0 = Cosmology.angular_diameter_dist(cosmo, z[i])
 		tL0 = Cosmology.lookback_time(cosmo, z[i])
-		dP0 = tL0 * SpeedOfLightInVacuum
-		tC0 = dC0 / SpeedOfLightInVacuum
-		@inbounds dC[i] = ustrip.(uconvert(u"m", dC0))
-		@inbounds dL[i] = ustrip.(uconvert(u"m", dL0))
-		@inbounds dP[i] = ustrip.(uconvert(u"m", dP0))
-		@inbounds dT[i] = ustrip.(uconvert(u"m", dT0))
-		@inbounds dA[i] = ustrip.(uconvert(u"m", dA0))
-		@inbounds tL[i] = ustrip.(uconvert(u"s", tL0))
-		@inbounds tC[i] = ustrip.(uconvert(u"s", tC0))
+		@inbounds dC[i] = ustrip(uconvert(u"m", dC0))
+		@inbounds dL[i] = ustrip(uconvert(u"m", dL0))
+		@inbounds dP[i] = ustrip(uconvert(u"m", tL0 * SpeedOfLightInVacuum))
+		@inbounds dT[i] = ustrip(uconvert(u"m", dT0))
+		@inbounds dA[i] = ustrip(uconvert(u"m", dA0))
+		@inbounds tL[i] = ustrip(uconvert(u"s", tL0))
+		@inbounds tC[i] = ustrip(uconvert(u"s", dC0 / SpeedOfLightInVacuum))
 	end
 
-	idxDC = sortperm(dC)
-	idxDL = sortperm(dL)
-	idxDP = sortperm(dP)
-	idxDT = sortperm(dT)
-	idxDA = sortperm(dA)
-	idxTC = sortperm(tC)
-	idxTL = sortperm(tL)
-
-	dc2z_ = interpolate(dC[idxDC], z[idxDC], SteffenMonotonicInterpolation())
-	dl2z_ = interpolate(dL[idxDL], z[idxDL], SteffenMonotonicInterpolation())
-	dp2z_ = interpolate(dP[idxDP], z[idxDP], SteffenMonotonicInterpolation())
-	dt2z_ = interpolate(dT[idxDT], z[idxDT], SteffenMonotonicInterpolation())
-	da2z_ = interpolate(dA[idxDA], z[idxDA], SteffenMonotonicInterpolation())
-	tl2z_ = interpolate(tL[idxTL], z[idxTL], SteffenMonotonicInterpolation())
-	tc2z_ = interpolate(tC[idxTC], z[idxTC], SteffenMonotonicInterpolation())
-
-	dc2z(x::Real) = dc2z_(x)
-	dl2z(x::Real) = dl2z_(x)
-	dp2z(x::Real) = dp2z_(x)
-	dt2z(x::Real) = dt2z_(x)
-	da2z(x::Real) = da2z_(x)
-	tl2z(x::Real) = tl2z_(x)
-	tc2z(x::Real) = tc2z_(x)
-	dc2z(x::Unitful.Length) = dc2z_(ustrip(uconvert(u"m", x)))
-	dl2z(x::Unitful.Length) = dl2z_(ustrip(uconvert(u"m", x)))
-	dp2z(x::Unitful.Length) = dp2z_(ustrip(uconvert(u"m", x)))
-	dt2z(x::Unitful.Length) = dt2z_(ustrip(uconvert(u"m", x)))
-	da2z(x::Unitful.Length) = da2z_(ustrip(uconvert(u"m", x)))
-	tl2z(x::Unitful.Length) = tl2z_(ustrip(uconvert(u"m", x)))
-	tc2z(x::Unitful.Length) = tc2z_(ustrip(uconvert(u"m", x)))
-
 	return (
-		comoving = dc2z,
-		lightTravel = dp2z,
-		luminosity = dl2z,
-		transverseComoving = dt2z,
-		angularDiameter = da2z,
-		lookback = tl2z,
-		conformal = tc2z
+		comoving = UnitInterpolation(sortedInterpolation(dC, z), u"m"),
+		lightTravel = UnitInterpolation(sortedInterpolation(dP, z), u"m"),
+		luminosity = UnitInterpolation(sortedInterpolation(dL, z), u"m"),
+		transverseComoving = UnitInterpolation(sortedInterpolation(dT, z), u"m"),
+		angularDiameter = UnitInterpolation(sortedInterpolation(dA, z), u"m"),
+		lookback = UnitInterpolation(sortedInterpolation(tL, z), u"s"),
+		conformal = UnitInterpolation(sortedInterpolation(tC, z), u"s"),
 	)
 end
 
