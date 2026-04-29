@@ -18,19 +18,20 @@ The default constructors can be built using only the first 3 or 4 parameters.
 
 
 # Members
-- `h` [`Real`]: dimensionless Hubble constant  
-- `Ωm` [`Real`]: matter density  
-- `Ωr` [`Real`]: radiation density   
-- `Ωk` [`Real`]: curvature density  
-- `ΩΛ` [`Real`]: dark energy density   
-- `Ωb` [`Real`]: baryon density (set to -1 if unavailable)  
-- `Nν` [`Real`]: number of effective neutrino species (defaults to 3)  
-- `Tcmb` [`Real`]: CMB temperature at present time (defaults to 2.7255 K, following Planck)  
-- `wEOSΛ` [`NTuple{2, Real}`]: tuple with parameters of the equation of state for dark energy: $w = w_0 + w_a (1 - a)$  
-- `cosmology` [`AbstractCosmology``]: object from `Cosmology.jl`  
-- `toRedshift` [`Dict{Symbol, Function}`]: functions to convert distance/time to redshift (`:comoving`, `:lightTravel`, `:angularDiameter`,`:transverseComoving`, `:luminosity`, `:lookback`, `:conformal`)  
-- `fromRedshift::Dict{Symbol, Function}`: functions to convert distance/time from redshift (`:comoving`, `:lightTravel`, `:angularDiameter`, `:transverseComoving`, `:luminosity`, `:lookback`, `:conformal`)  
-- `zArray` [`Vector{T}`]: array of values of redshift to build distance/time conversion functions; if nothing defaults to built-in values  
+- `Ωb` [`T`]: baryon density parameter (set to -1 if unavailable)
+- `Tcmb` [`T`]: CMB temperature at present time in Kelvin (defaults to 2.7255 K, following Planck)
+- `Nν` [`T`]: number of effective neutrino species (defaults to 3)
+- `wEOSΛ` [`SVector{2, T}`]: equation-of-state parameters for dark energy: $w(a) = w_0 + w_a (1 - a)$; set to $(-1, 0)$ for ΛCDM
+- `cosmology` [`C`]: underlying `Cosmology.jl` object (concrete type, e.g. `FlatLCDM{T}`)
+- `fromRedshift` [`FF`]: named tuple of concrete closures `(z2, z1) -> distance/time` (keys: `:comoving`, `:lightTravel`, `:luminosity`, `:transverseComoving`, `:angularDiameter`, `:lookback`, `:conformal`)
+- `toRedshift` [`TF`]: named tuple of concrete closures `distance/time -> z` (same keys)
+
+# Indirect members
+- `h`: the dimensionless Hubble parameter, delegated to the underlying `cosmology` field
+- `ΩΛ`: the dark energy density parameter, delegated to the underlying `cosmology` field
+- `Ωm`: the matter density parameter, delegated to the underlying `cosmology` field
+- `Ωr`: the radiation density parameter, delegated to the underlying `cosmology` field
+- `Ωk`: the curvature density parameter, delegated to the underlying `cosmology` field (returns 0 for flat cosmologies)
 
 
 # Examples
@@ -53,43 +54,26 @@ cosmo4 = CosmologicalModel(h, Ωm, Ωk, Ωr; Tcmb = Tcmb,  Nν = Nν) # includes
 
 
 # To do
-. Consider taking `Unitful` quantities. 
-. Should this struct be immutable?
+. Consider taking `Unitful` quantities.
 """
-mutable struct CosmologicalModel{C <: AbstractCosmology, T <: Real}
-	h::T
-	ΩΛ::T
-	Ωm::T
-	Ωr::T
-	Ωk::T
+struct CosmologicalModel{C <: AbstractCosmology, T <: Real, FF, TF}
 	Ωb::T
 	Tcmb::T
 	Nν::T
 	wEOSΛ::SVector{2, T}
 	cosmology::C
-	toRedshift::ConversionTuple
-	fromRedshift::ConversionTuple
-	zArray::Vector{T}
+	fromRedshift::FF
+	toRedshift::TF
 
 	CosmologicalModel{C, T}(cosmo::C; Ωb::Real = -1., Tcmb::Real = 2.7255, Nν::Real = 3., z::Maybe{AbstractVector} = nothing) where {C <: AbstractCosmology, T <: Real} = begin
-		h = T(cosmo.h)
-		Ωr = T(cosmo.Ω_r)
-		Ωm = T(cosmo.Ω_m)
-		ΩΛ = T(cosmo.Ω_Λ)
-		Ωb = T(Ωb)
-		Ωk = (C isa Union{Cosmology.AbstractClosedCosmology, Cosmology.AbstractOpenCosmology}) ? T(cosmo.Ω_k) : zero(T)
-		wEOSΛ = (C isa Union{Cosmology.FlatWCDM, Cosmology.OpenWCDM, Cosmology.ClosedWCDM}) ? SVector{2, T}(T(cosmo.w0), T(cosmo.wa)) : SVector{2, T}(-one(T), zero(T))
-		Tcmb = T(Tcmb)
-		Nν = T(Nν)
-
-		if isnothing(z)
-			z = prepareRedshiftSamples(T)
-		end
-
-		funcTo = conversionsToRedshift(cosmo, z)
-		funcFrom = conversionsFromRedshift(cosmo)
-
-		return new{C, T}(h, ΩΛ, Ωm, Ωr, Ωk, Ωb, Tcmb, Nν, wEOSΛ, convert(T, cosmo), funcTo, funcFrom, z)
+		Ωb_ = T(Ωb)
+		Tcmb_ = T(Tcmb)
+		Nν_ = T(Nν)
+		wEOSΛ = (C <: Union{Cosmology.FlatWCDM, Cosmology.OpenWCDM, Cosmology.ClosedWCDM}) ? SVector{2, T}(T(cosmo.w0), T(cosmo.wa)) : SVector{2, T}(-one(T), zero(T))
+		zSamples = isnothing(z) ? prepareRedshiftSamples(T) : convert(Vector{T}, z)
+		funcFrom = conversionsFromRedshift(cosmo, T)
+		funcTo = conversionsToRedshift(cosmo, zSamples, T)
+		return new{C, T, typeof(funcFrom), typeof(funcTo)}(Ωb_, Tcmb_, Nν_, wEOSΛ, convert(T, cosmo), funcFrom, funcTo)
 	end
 end
 
@@ -119,7 +103,49 @@ end
 
 
 # ----------------------------------------------------------------------------------------------- #
+#
+@doc """
+	getproperty(cosmology, name)
+
+Property access for `CosmologicalModel`.
+The fields `h`, `ΩΛ`, `Ωm`, `Ωr`, `Ωk` are not stored directly; they are delegated to the underlying `cosmology` field to avoid data duplication.
+Accessing them in a tight loop is fine; for absolute maximum performance use `cosmology.cosmology.h` etc. to bypass dispatch.
+"""
+function Base.getproperty(cosmology::CosmologicalModel{C, T}, name::Symbol) where {C, T}
+	c = getfield(cosmology, :cosmology)
+	if name === :h
+		return c.h
+	elseif name === :ΩΛ
+		return c.Ω_Λ
+	elseif name === :Ωm
+		return c.Ω_m
+	elseif name === :Ωr
+		return c.Ω_r
+	elseif name === :Ωk
+		return C <: Union{Cosmology.AbstractClosedCosmology, Cosmology.AbstractOpenCosmology} ? c.Ω_k : zero(T)
+	else
+		return getfield(cosmology, name)
+	end
+end
+
+@inline Base.propertynames(::CosmologicalModel) = (:Ωb, :Tcmb, :Nν, :wEOSΛ, :cosmology, :fromRedshift, :toRedshift, :h, :ΩΛ, :Ωm, :Ωr, :Ωk)
+
+
+# ----------------------------------------------------------------------------------------------- #
 # 
+@doc """
+	CosmologyPlanck()
+
+Convenience constructor for the Planck 2018 cosmological parameters (TT,TE,EE+lowE+lensing).
+
+# Reference
+"Planck 2018 results. VI. Cosmological parameters"
+Planck Collaboration
+Astronomy and Astrophysics 641 (2020) A6
+arXiv:1807.06209
+doi:10.1051/0004-6361/201833910
+bibkey: planck2020a
+"""
 function CosmologyPlanck(; T::Type = Float64)
 	c0 = Cosmology.cosmology()
 	cosmo = Cosmology.FlatLCDM{T}(T(c0.h), T(c0.Ω_Λ), T(c0.Ω_m), T(c0.Ω_r))
@@ -136,7 +162,7 @@ end
 Determine whether a `CosmologicalModel` has a flat geometry.
 
 # Input
-- `cosmol` [`CosmologicalModel`]: the cosmological model
+- `cosmology` [`CosmologicalModel`]: the cosmological model
 """
 @inline isFlat(cosmology::CosmologicalModel) = cosmology.cosmology isa Cosmology.AbstractFlatCosmology
 
@@ -176,11 +202,9 @@ Determine whether a `CosmologicalModel` has a closed geometry.
 Determine whether a `CosmologicalModel` is described by cold dark matter.
 
 # Input
-- `cosmol` [`CosmologicalModel`]: the cosmological model
+- `cosmology` [`CosmologicalModel`]: the cosmological model
 """
-function isCold(cosmology::CosmologicalModel)
-	return (cosmology.cosmology isa Cosmology.FlatLCDM) || (cosmology.cosmology isa Cosmology.OpenLCDM) || (cosmology.cosmology isa Cosmology.ClosedLCDM)
-end
+@inline isCold(::CosmologicalModel{C}) where {C} = C <: Union{Cosmology.FlatLCDM, Cosmology.OpenLCDM, Cosmology.ClosedLCDM}
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -191,11 +215,9 @@ end
 Determine whether a `CosmologicalModel` is described by warm dark matter.
 
 # Input
-- `cosmol` [`CosmologicalModel`]: the cosmological model
+- `cosmology` [`CosmologicalModel`]: the cosmological model
 """
-function isWarm(cosmology::CosmologicalModel)
-	return (cosmology.cosmology isa Cosmology.FlatWCDM) || (cosmology.cosmology isa Cosmology.OpenWCDM) || (cosmology.cosmology isa Cosmology.ClosedWCDM)
-end
+@inline isWarm(cosmology::CosmologicalModel{C}) where {C} = C <: Union{Cosmology.FlatWCDM, Cosmology.OpenWCDM, Cosmology.ClosedWCDM}
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -203,7 +225,7 @@ end
 @doc """
 Get type of values contained in `CosmologicalModel` object.
 """
-Base.eltype(cosmology::CosmologicalModel) = typeof(cosmology.h)
+@inline Base.eltype(::CosmologicalModel{C, T}) where {C, T} = T
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -211,18 +233,8 @@ Base.eltype(cosmology::CosmologicalModel) = typeof(cosmology.h)
 @doc """
 Object equality comparison.
 """
-function Base.:(==)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2}
-	return (T1 == T2) && (C1 == C2) && (cosmol1.cosmology == cosmol2.cosmology) && (cosmol1.Ωb == cosmol2.Ωb) && (cosmol1.Nν == cosmol2.Nν) && (cosmol1.wEOSΛ == cosmol2.wEOSΛ)
-end
-
-
-# ----------------------------------------------------------------------------------------------- #
-# 
-@doc """
-Object inequality comparison.
-"""
-function Base.:(!=)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2}
-	return ! (cosmol1 == cosmol2)
+function Base.:(==)(cosmol1::CosmologicalModel, cosmol2::CosmologicalModel)
+	return getfield(cosmol1, :cosmology) == getfield(cosmol2, :cosmology) && cosmol1.Ωb == cosmol2.Ωb && cosmol1.Nν == cosmol2.Nν && cosmol1.wEOSΛ == cosmol2.wEOSΛ
 end
 
 
@@ -241,7 +253,7 @@ end
 @doc """
 Promotion rules.
 """
-function Base.promote_rule(::Type{CosmologicalModel{C, T1}}, ::Type{CosmologicalModel{C, T2}}) where {C, T1, T2}
+function Base.promote_rule(::Type{CosmologicalModel{C, T1, FF1, TF1}}, ::Type{CosmologicalModel{C, T2, FF2, TF2}}) where {C, T1, T2, FF1, TF1, FF2, TF2}
 	return CosmologicalModel{C, promote_type(T1, T2)}
 end
 
