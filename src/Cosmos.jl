@@ -73,5 +73,7 @@ include("distanceTime.jl")
 include("densities.jl")
 include("io.jl")
 
+setDefaultCosmology(CosmologyPlanck())
+
 
 end # module

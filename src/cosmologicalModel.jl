@@ -71,7 +71,7 @@ mutable struct CosmologicalModel{C <: AbstractCosmology, T <: Real}
 	fromRedshift::ConversionTuple
 	zArray::Vector{T}
 
-	function CosmologicalModel{C, T}(cosmo::C; Ωb::Real = -1., Tcmb::Real = 2.7255, Nν::Real = 3., z::Maybe{AbstractVector} = nothing) where {C <: AbstractCosmology, T <: Real}
+	CosmologicalModel{C, T}(cosmo::C; Ωb::Real = -1., Tcmb::Real = 2.7255, Nν::Real = 3., z::Maybe{AbstractVector} = nothing) where {C <: AbstractCosmology, T <: Real} = begin
 		h = T(cosmo.h)
 		Ωr = T(cosmo.Ω_r)
 		Ωm = T(cosmo.Ω_m)
@@ -127,22 +127,18 @@ function CosmologyPlanck(; T::Type = Float64)
 end
 
 
-# ----------------------------------------------------------------------------------------------- #
-# 
-setDefaultCosmology(CosmologyPlanck())
-
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """	
+@doc """
 	isFlat(cosmology)
 
 Determine whether a `CosmologicalModel` has a flat geometry.
 
 # Input
-- `cosmol::CosmologicalModel`: the cosmological model
+- `cosmol` [`CosmologicalModel`]: the cosmological model
 """
-isFlat(cosmology::CosmologicalModel) = cosmology.cosmology isa Cosmology.AbstractFlatCosmology
+@inline isFlat(cosmology::CosmologicalModel) = cosmology.cosmology isa Cosmology.AbstractFlatCosmology
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -153,55 +149,52 @@ isFlat(cosmology::CosmologicalModel) = cosmology.cosmology isa Cosmology.Abstrac
 Determine whether a `CosmologicalModel` has an open geometry.
 
 # Input
-- `cosmol::CosmologicalModel`: the cosmological model
+- `cosmology` [`CosmologicalModel`]: the cosmological model
 """
-isOpen(cosmology::CosmologicalModel) = cosmology.cosmology isa Cosmology.AbstractOpenCosmology
+@inline isOpen(cosmology::CosmologicalModel) = cosmology.cosmology isa Cosmology.AbstractOpenCosmology
+
 
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """	
+@doc """
 	isClosed(cosmology)
 
 Determine whether a `CosmologicalModel` has a closed geometry.
 
 # Input
-- `cosmol::CosmologicalModel`: the cosmological model
+- `cosmology` [`CosmologicalModel`]: the cosmological model
 """
-isClosed(cosmology::CosmologicalModel) = cosmology.cosmology isa Cosmology.AbstractClosedCosmology
+@inline isClosed(cosmology::CosmologicalModel) = cosmology.cosmology isa Cosmology.AbstractClosedCosmology
 
 
 # ----------------------------------------------------------------------------------------------- #
 # 
-@doc """	
+@doc """
 	isCold(cosmology)
 
 Determine whether a `CosmologicalModel` is described by cold dark matter.
 
 # Input
-- `cosmol::CosmologicalModel`: the cosmological model
+- `cosmol` [`CosmologicalModel`]: the cosmological model
 """
-isCold(cosmology::CosmologicalModel) = begin 
-	return 
-		(cosmology.cosmology isa Cosmology.FlatLCDM) || 
-		(cosmology.cosmology isa Cosmology.OpenLCDM) || 
-		(cosmology.cosmology isa Cosmology.ClosedLCDM)
+function isCold(cosmology::CosmologicalModel)
+	return (cosmology.cosmology isa Cosmology.FlatLCDM) || (cosmology.cosmology isa Cosmology.OpenLCDM) || (cosmology.cosmology isa Cosmology.ClosedLCDM)
 end
 
 
-@doc """	
+# ----------------------------------------------------------------------------------------------- #
+# 
+@doc """
 	isWarm(cosmology)
 
 Determine whether a `CosmologicalModel` is described by warm dark matter.
 
 # Input
-- `cosmol::CosmologicalModel`: the cosmological model
+- `cosmol` [`CosmologicalModel`]: the cosmological model
 """
-isWarm(cosmology::CosmologicalModel) = begin 
-	return 
-		(cosmology.cosmology isa Cosmology.FlatWCDM) || 
-		(cosmology.cosmology isa Cosmology.OpenWCDM) || 
-		(cosmology.cosmology isa Cosmology.ClosedWCDM)
+function isWarm(cosmology::CosmologicalModel)
+	return (cosmology.cosmology isa Cosmology.FlatWCDM) || (cosmology.cosmology isa Cosmology.OpenWCDM) || (cosmology.cosmology isa Cosmology.ClosedWCDM)
 end
 
 
@@ -218,8 +211,8 @@ Base.eltype(cosmology::CosmologicalModel) = typeof(cosmology.h)
 @doc """
 Object equality comparison.
 """
-Base.:(==)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2} = begin
-	(T1 == T2) && (C1 == C2) && (cosmol1.cosmology == cosmol2.cosmology) && (cosmol1.Ωb == cosmol2.Ωb) && (cosmol1.Nν == cosmol2.Nν) && (cosmol1.wEOSΛ == cosmol2.wEOSΛ)
+function Base.:(==)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2}
+	return (T1 == T2) && (C1 == C2) && (cosmol1.cosmology == cosmol2.cosmology) && (cosmol1.Ωb == cosmol2.Ωb) && (cosmol1.Nν == cosmol2.Nν) && (cosmol1.wEOSΛ == cosmol2.wEOSΛ)
 end
 
 
@@ -228,7 +221,9 @@ end
 @doc """
 Object inequality comparison.
 """
-Base.:(!=)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2} = ! (cosmol1 == cosmol2)
+function Base.:(!=)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2}) where {C1, C2, T1, T2}
+	return ! (cosmol1 == cosmol2)
+end
 
 
 # ----------------------------------------------------------------------------------------------- #
@@ -236,7 +231,7 @@ Base.:(!=)(cosmol1::CosmologicalModel{C1, T1}, cosmol2::CosmologicalModel{C2, T2
 @doc """
 Type conversion.
 """
-Base.convert(::Type{T}, cosmology::CosmologicalModel{C, U}) where {C, T <: Real, U} = begin 
+function Base.convert(::Type{T}, cosmology::CosmologicalModel{C, U}) where {C, T <: Real, U}
 	return CosmologicalModel{typeof(convert(T, cosmology.cosmology)), T}(convert(T, cosmology.cosmology); Ωb = cosmology.Ωb, Nν = cosmology.Nν, Tcmb = cosmology.Tcmb)
 end
 
@@ -246,7 +241,9 @@ end
 @doc """
 Promotion rules.
 """
-Base.promote_rule(::Type{CosmologicalModel{C, T1}}, ::Type{CosmologicalModel{C, T2}}) where {C, T1, T2} = CosmologicalModel{C, promote_type(T1, T2)}
+function Base.promote_rule(::Type{CosmologicalModel{C, T1}}, ::Type{CosmologicalModel{C, T2}}) where {C, T1, T2}
+	return CosmologicalModel{C, promote_type(T1, T2)}
+end
 
 
 # ----------------------------------------------------------------------------------------------- #

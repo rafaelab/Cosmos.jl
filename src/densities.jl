@@ -9,8 +9,8 @@ Computes the critical density of the universe at a given redshift:
 ```
 
 # Input 
-- `cosmology::CosmologicalModel`: the cosmological model of interest 
-- `z::Real`: the redshift at which to compute the density 
+- `cosmology` [`CosmologicalModel`]: the cosmological model of interest 
+- `z` [`Real`]: the redshift at which to compute the density 
 """
 @inline computeCriticalDensity(cosmology::CosmologicalModel; z::Real = 0.) = begin
 	return upreferred(3. * hubbleParameter(cosmology, z) ^ 2 / 8π / G)
@@ -28,8 +28,8 @@ Computes the density of matter in the universe at a given redshift:
 ```
 
 # Input 
-- `cosmology::CosmologicalModel`: the cosmological model of interest 
-- `z::Real`: the redshift at which to compute the density 
+- `cosmology` [`CosmologicalModel`]: the cosmological model of interest 
+- `z` [`Real`]: the redshift at which to compute the density 
 """
 function computeMatterDensity(cosmology::CosmologicalModel; z::Real = 0.)
 	ρc = computeCriticalDensity(cosmology; z = z)
@@ -49,8 +49,8 @@ Computes the density of matter in the universe at a given redshift:
 
 
 # Input 
-- `cosmology::CosmologicalModel`: the cosmological model of interest
-- `z::Real`: the redshift at which to compute the density 
+- `cosmology` [`CosmologicalModel`]: the cosmological model of interest
+- `z` [`Real`]: the redshift at which to compute the density 
 """
 function computeRadiationDensity(cosmology::CosmologicalModel; z::Real = 0.)
 	ρc = computeCriticalDensity(cosmology; z = z)
@@ -69,8 +69,8 @@ Computes the density of matter in the universe at a given redshift:
 
 
 # Input 
-- `cosmology::CosmologicalModel`: the cosmological model of interest
-- `z::Real`: the redshift at which to compute the density
+- `cosmology` [`CosmologicalModel`]: the cosmological model of interest
+- `z` [`Real`]: the redshift at which to compute the density
 """
 function computeCurvatureDensity(cosmology::CosmologicalModel; z::Real = 0.)
 	ρc = computeCriticalDensity(cosmology; z = z)
@@ -89,8 +89,8 @@ Computes the density of matter in the universe at a given redshift:
 
 
 # Input 
-. `cosmology::CosmologicalModel`: the cosmological model of interest
-. `z::Real`: the redshift at which to compute the density
+- `cosmology` [`CosmologicalModel`]: the cosmological model of interest
+- `z` [`Real`]: the redshift at which to compute the density
 """
 function computeDarkEnergyDensity(cosmology::CosmologicalModel; z::Real = 0.)
 	ρc = computeCriticalDensity(cosmology; z = z)
@@ -109,11 +109,13 @@ Computes the density of matter in the universe at a given redshift:
 
 
 # Input 
-- `cosmology::CosmologicalModel`: the cosmological model of interest
-- `z::Real`: the redshift at which to compute the density
+- `cosmology` [`CosmologicalModel`]: the cosmological model of interest
+- `z` [`Real`]: the redshift at which to compute the density
 """
 function computeBaryonDensity(cosmology::CosmologicalModel; z::Real = 0.)
-	cosmology.Ωb ≥ 0 || throw(ArgumentError("Cannot compute the baryon density because the baryon fraction was not provided to the `CosmologicalModel`."))
+	if cosmology.Ωb < 0
+		throw(ArgumentError("Cannot compute the baryon density because the baryon fraction was not provided to the `CosmologicalModel`."))
+	end
 	ρc = computeCriticalDensity(cosmology; z = z)
 	return upreferred(cosmology.Ωb * ρc)
 end

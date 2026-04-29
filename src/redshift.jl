@@ -39,24 +39,24 @@ ScaleFactor(a::Real) = ScaleFactor{typeof(a)}(a)
 
 Get data type.
 """
-Base.eltype(::Redshift{Z}) where {Z} = Z
-Base.eltype(::ScaleFactor{A}) where {A} = A
+@inline Base.eltype(::Redshift{Z}) where {Z} = Z
+@inline Base.eltype(::ScaleFactor{A}) where {A} = A
 
 
 # ----------------------------------------------------------------------------------------------- #
 #
-Base.convert(::Type{Redshift{Z1}}, z::Redshift{Z2}) where {Z1, Z2} = Redshift{Z1}(Z1(z.value))
-Base.convert(::Type{Redshift{Z}}, scaleFactor::ScaleFactor{A}) where {Z, A} = Redshift{Z}(1. / scaleFactor.value - 1.)
-Base.convert(::Type{Redshift}, scaleFactor::ScaleFactor{A}) where {A} = convert(Redshift{A}, scaleFactor)
-Base.convert(::Type{Z}, z::Redshift) where {Z <: Real} = Redshift{Z}(z.value)
+@inline Base.convert(::Type{Redshift{Z1}}, z::Redshift{Z2}) where {Z1, Z2} = Redshift{Z1}(Z1(z.value))
+@inline Base.convert(::Type{Redshift{Z}}, scaleFactor::ScaleFactor{A}) where {Z, A} = Redshift{Z}(1. / scaleFactor.value - 1.)
 
-Base.convert(::Type{ScaleFactor{A1}}, a::ScaleFactor{A2}) where {A1, A2} = ScaleFactor{A1}(A1(a.value))
-Base.convert(::Type{ScaleFactor{A}}, redshift::Redshift{Z}) where {Z, A} = ScaleFactor{A}(1. / (1. + redshift.value))
-Base.convert(::Type{ScaleFactor}, redshift::Redshift{Z}) where {Z} = convert(ScaleFactor{Z}, redshift)
-Base.convert(::Type{A}, a::ScaleFactor) where {A <: Real} = ScaleFactor{A}(a.value)
 
-Base.promote_rule(::Type{Redshift{Z1}}, ::Type{Redshift{Z2}}) where {Z1, Z2} = Redshift{promote_type(Z1, Z2)}
-Base.promote_rule(::Type{ScaleFactor{A1}}, ::Type{ScaleFactor{A2}}) where {A1, A2} = ScaleFactor{promote_type(A1, A2)}
+@inline Base.convert(::Type{Redshift}, scaleFactor::ScaleFactor{A}) where {A} = convert(Redshift{A}, scaleFactor)
+@inline Base.convert(::Type{Z}, z::Redshift) where {Z <: Real} = Redshift{Z}(z.value)
+@inline Base.convert(::Type{ScaleFactor{A1}}, a::ScaleFactor{A2}) where {A1, A2} = ScaleFactor{A1}(A1(a.value))
+@inline Base.convert(::Type{ScaleFactor{A}}, redshift::Redshift{Z}) where {Z, A} = ScaleFactor{A}(1. / (1. + redshift.value))
+@inline Base.convert(::Type{ScaleFactor}, redshift::Redshift{Z}) where {Z} = convert(ScaleFactor{Z}, redshift)
+@inline Base.convert(::Type{A}, a::ScaleFactor) where {A <: Real} = ScaleFactor{A}(a.value)
+@inline Base.promote_rule(::Type{Redshift{Z1}}, ::Type{Redshift{Z2}}) where {Z1, Z2} = Redshift{promote_type(Z1, Z2)}
+@inline Base.promote_rule(::Type{ScaleFactor{A1}}, ::Type{ScaleFactor{A2}}) where {A1, A2} = ScaleFactor{promote_type(A1, A2)}
 
 ScaleFactor(redshift::Redshift) = convert(ScaleFactor{eltype(redshift)}, redshift)
 Redshift(scaleFactor::ScaleFactor) = convert(Redshift{eltype(scaleFactor)}, scaleFactor)
